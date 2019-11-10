@@ -112,9 +112,9 @@ Vagrant.configure("2") do |config|
     ansible.verbose = ANSIBLE_VERBOSITY
     ansible.install_mode = "pip"
     ansible.version = ANSIBLE_VERSION
-    ansible.playbook = "/vagrant/provision/playbook.yml"
-    ansible.galaxy_role_file = "/vagrant/provision/requirements.yml"
-    ansible.galaxy_roles_path = "/vagrant/provision/roles"
+    ansible.playbook = "/vagrant/#{PROJECT_NAME}/provision/playbook.yml"
+    ansible.galaxy_role_file = "/vagrant/#{PROJECT_NAME}/provision/requirements.yml"
+    ansible.galaxy_roles_path = "/vagrant/#{PROJECT_NAME}/provision/roles"
     ansible.galaxy_command = "ansible-galaxy install --ignore-certs --role-file=%{role_file} --roles-path=%{roles_path} #{ANSIBLE_GALAXY_FORCE}"
     ansible.become = true
     ansible.tags = ANSIBLE_TAGS
@@ -128,7 +128,7 @@ Vagrant.configure("2") do |config|
   # role and the molecule testing framework used.
   config.vm.provision "tests", type: :ansible_local do |ansible|
     ansible.verbose = ANSIBLE_TESTS_VERBOSITY
-    ansible.playbook = "/vagrant/provision/tests.yml"
+    ansible.playbook = "/vagrant/#{PROJECT_NAME}/provision/tests.yml"
     ansible.become = true
     ansible.tags = ANSIBLE_TAGS
   end
