@@ -1,0 +1,5 @@
+alias gw='./gradlew'
+alias gq='./gradlew -q'
+alias cn='cloud-nuke'
+alias tf='terraform'
+alias tg='terragrunt'

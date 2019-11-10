@@ -1,0 +1,45 @@
+---
+# TODO replace with https://github.com/indusbox/goss-ansible and write tests in goss.
+- name: Run tests
+  hosts:
+    - all
+  become: yes
+  become_user: vagrant
+  vars:
+    ignore_errors: no
+  tasks:
+    - name: Test aws cli
+      shell: >
+        aws --version
+      register: output
+      failed_when:
+      - '"aws-cli/1.16.25" not in output.stderr'
+      ignore_errors: ignore_errors
+      tags: test,awscli,awsclitest
+
+    - name: Test docker by running hello world image
+      shell: >
+        docker run hello-world
+      register: output
+      failed_when:
+        - '"Hello from Docker!" not in output.stdout'
+      ignore_errors: ignore_errors
+      tags: test,docker,testdocker
+
+    - name: Test docker container network connectivity
+      shell: >
+        docker run ubuntu:16.04 apt update
+      register: output
+      failed_when:
+      - '"Reading package lists..." not in output.stdout'
+      ignore_errors: ignore_errors
+      tags: test,docker,testdocker
+
+    - name: Test packer
+      shell: >
+        packer version
+      register: output
+      failed_when:
+      - '"1.4.2" not in output.stdout'
+      ignore_errors: ignore_errors
+      tags: test,packer,packertest

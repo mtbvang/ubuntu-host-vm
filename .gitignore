@@ -1,0 +1,17 @@
+/.project
+/.gradle/
+/build/
+/keys/
+/.vagrant
+/.settings
+/**/*.retry
+/.idea/
+/localdev.iml
+/ansible/
+/provision/playbook.retry
+/provision/get-pip.py
+/**/*.log
+/output-vmware-vmx
+/ubuntu-desktop.box
+/provision/roles
+/packer_cache
