@@ -17,9 +17,9 @@ reload: ## vagrant reload VM with $VM_MEMORY GB ram (default=32768) and $VM_CPUS
 recreate: ## vagrant destroy and up a VM with $VM_MEMORY GB ram (default=8) and $VM_CPUS (default=2) cpus.
 	vagrant destroy host -f; \
 	$(vagrantEnvVars) vagrant up
-
 provision: ## vagrant provision VM
 	$(vagrantEnvVars) vagrant provision
+
 
 test: ## Run tests.yml playbook to test playbook.yml playbook on host VM
 	$(vagrantEnvVars) vagrant provision --provision-with=tests
@@ -39,3 +39,7 @@ halt: ## vagrant halt, stops the vagrant machine
 
 box-create: ## create a vagrant box from the existing vm
 	packer build ubuntu.json
+
+box-create-clean: ## clean files for box-create
+	rm -rf output-vmware-vmx; \
+	rm ubuntu-desktop.box

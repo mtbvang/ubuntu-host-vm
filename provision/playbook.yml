@@ -81,7 +81,18 @@
     become: true
     become_user: root
     tags: vscode
-
+  - role: vagrant
+    vagrant_version: "2.2.5"
+    vagrant_virtualbox_install: False
+    become: true
+    become_user: root
+    tags: vagrant
+  - role: virtualbox
+    virtualbox_state: 'present'
+    virtualbox_apt_repo: 'deb [arch=amd64] https://download.virtualbox.org/virtualbox/debian bionic contrib'
+    become: true
+    become_user: root
+    tags: virtualbox
   tasks:
   - name: Set bashrc file
     template:

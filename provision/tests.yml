@@ -43,3 +43,21 @@
       - '"1.4.2" not in output.stdout'
       ignore_errors: ignore_errors
       tags: test,packer,packertest
+
+    - name: Test virtualbox
+      shell: >
+        vboxmanage --version
+      register: output
+      failed_when:
+        - '"5.2.3" not in output.stdout'
+      ignore_errors: ignore_errors
+      tags: test,virtualbox
+
+    - name: Test vagrant
+      shell: >
+        vagrant --version
+      register: output
+      failed_when:
+        - '"2.2.5" not in output.stdout'
+      ignore_errors: ignore_errors
+      tags: test,vagrant

@@ -29,3 +29,9 @@
 - src: https://github.com/gantsign/ansible-role-visual-studio-code
   name: vscode
   version: '6.3.1'
+- src: https://github.com/jdauphant/ansible-role-vagrant
+  name: vagrant
+  version: 'v1.1'
+- src: https://github.com/cjsteel/ansible-role-virtualbox
+  name: virtualbox
+
