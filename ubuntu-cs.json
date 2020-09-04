@@ -1,0 +1,88 @@
+{
+  "variables": {
+    "vm_name": "cs-ubuntu1804-desktop",
+    "version": "{{env `VAGRANT_BOX_VERSION`}}",
+    "github_oauth_token": "{{env `GITHUB_OAUTH_TOKEN`}}",
+    "memory": "12228",
+    "cpus": "4"
+  },
+  "builders": [{
+    "type": "vmware-vmx",
+    "vm_name": "ubuntu1804",
+    "source_path": "output-ubuntu1804-desktop-vmware-iso/ubuntu1804-desktop.vmx",
+    "output_directory": "output-ubuntu-cs-vmware",
+    "ssh_username": "vagrant",
+    "ssh_password": "vagrant",
+    "ssh_timeout": "300s",
+    "vmx_data": {
+      "ethernet0.connectionType" : "nat",
+      "ethernet0.addressType" : "generated",
+      "ethernet0.virtualDev" :  "e1000",
+      "ethernet0.present"    : "TRUE",
+      "memsize": "{{user `memory`}}",
+      "numvcpus": "{{user `cpus`}}",
+      "cpuid.coresPerSocket" : "2"
+    },
+    "shutdown_command": "echo 'packer' | sudo -S shutdown -P now"
+  }],
+  "post-processors": [
+    {
+      "keep_input_artifact": false,
+      "output": "box/{{.Provider}}/{{user `vm_name`}}-{{user `version`}}.box",
+      "type": "vagrant",
+      "vagrantfile_template": "{{ user `vagrantfile_template` }}"
+    }
+  ],
+  "provisioners": [
+    {
+      "type": "shell",
+      "inline": [
+        "sudo apt-get update && sudo DEBIAN_FRONTEND=noninteractive apt-get -y upgrade",
+        "sudo DEBIAN_FRONTEND=noninteractive apt-get install -y tinyproxy software-properties-common sudo tzdata wget ca-certificates python-pip python3-pip python3-dev postgresql-client bash make gettext vim bash-completion iputils-ping git python-yaml",
+        "sudo apt-add-repository ppa:ansible/ansible",
+        "sudo apt-get update -y",
+        "sudo apt-get install -y postgresql postgresql-contrib curl ansible",
+        "sudo apt-get clean"
+      ]
+    },
+    {
+      "type": "file",
+      "source": "provision/requirements.yml",
+      "destination": "/tmp/requirements.yml"
+    },
+    {
+      "type": "file",
+      "source": "provision/playbook.yml",
+      "destination": "/tmp/playbook.yml"
+    },
+    {
+      "type": "file",
+      "source": "provision/tests.yml",
+      "destination": "/tmp/tests.yml"
+    },
+    {
+      "type": "file",
+      "source": "provision/templates",
+      "destination": "/tmp/templates"
+    },
+    {
+      "type": "file",
+      "source": "provision/files",
+      "destination": "/tmp/files"
+    },
+    {
+      "type": "shell",
+      "inline": [
+        "sudo ansible-galaxy install -r /tmp/requirements.yml",
+        "sudo ansible-playbook /tmp/playbook.yml --extra-vars \"user=${USERNAME}\" --extra-vars \"group=${GROUPNAME}\" --extra-vars \"github_oauth_token=${GITHUB_OAUTH_TOKEN}\"",
+        "sudo ansible-playbook /tmp/tests.yml --extra-vars \"user=${USERNAME}\" --extra-vars \"github_oauth_token=${GITHUB_OAUTH_TOKEN}\"",
+        "sudo chmod -R 0777 /home/vagrant/.ansible"
+      ],
+      "environment_vars": [
+        "GITHUB_OAUTH_TOKEN={{user `github_oauth_token`}}",
+        "USERNAME=vagrant",
+        "GROUPNAME=vagrant"
+      ]
+    }
+  ]
+}
