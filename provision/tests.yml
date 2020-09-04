@@ -1,0 +1,206 @@
+---
+# TODO replace with https://github.com/indusbox/goss-ansible and write tests in goss.
+- name: Run tests
+  hosts:
+    - all
+  become: yes
+  become_user: "{{ user }}"
+  vars:
+    ignore_errors: no
+    user: 'vagrant'
+  environment:
+    GITHUB_OAUTH_TOKEN: "{{ github_oauth_token }}"
+  tasks:
+    - name: Test docker by running hello world image
+      shell: >
+        docker --version
+      register: output
+      failed_when:
+        - '"Docker version" not in output.stdout'
+      ignore_errors: ignore_errors
+      tags: test,docker,testdocker
+    - name: Test git secret
+      shell: >
+        git-secret
+      register: output
+      failed_when:
+        - '"no input parameters provided" not in output.stdout'
+      ignore_errors: ignore_errors
+      tags: test,gitsecret,gitsecrettest
+    - name: Test ssh config
+      lineinfile:
+        path: '/home/{{ user }}/.ssh/config'
+        regexp: '^UseKeychain'
+        state: absent
+      check_mode: no
+      register: output
+      failed_when: (output is changed) or (output is failed)
+      ignore_errors: ignore_errors
+      tags: test,terragrunt,terragrunttest
+    - name: Test aws-auth tool
+      shell: >
+        aws-auth
+      register: output
+      failed_when:
+        - '"A script that makes it easier to use" not in output.stdout'
+      ignore_errors: ignore_errors
+      tags: test,awsauth,awsauthtest
+    - name: Test openvpn-admin tool
+      shell: >
+        openvpn-admin -v
+      register: output
+      failed_when:
+        - '"v0.9.2" not in output.stdout'
+      ignore_errors: ignore_errors
+      tags: test,openvpnadmin,openvpnadmintest
+    - name: Test gruntwork installer
+      shell: >
+        gruntwork-install
+      register: output
+      failed_when:
+        - '"Download a Gruntwork Script Module and install it" not in output.stdout'
+      ignore_errors: ignore_errors
+      tags: test,gruntworkinstaller,gruntworkinstallertest
+    - name: Test terraform
+      shell: >
+        terraform version
+      register: output
+      failed_when:
+      - '"v0.12.17" not in output.stdout'
+      ignore_errors: ignore_errors
+      tags: test,terraform,terraformtest
+    - name: Test terraform alias
+      lineinfile:
+        path: '/home/{{ user }}/.bash_aliases'
+        line: "alias tf='terraform'"
+        state: present
+      check_mode: no
+      register: output
+      failed_when: (output is changed) or (output is failed)
+      ignore_errors: ignore_errors
+      tags: test,terraform,terraformtest
+
+    - name: Test aws cli
+      shell: >
+        aws --version
+      register: output
+      failed_when:
+      - '"aws-cli/1.18.80" not in output.stderr'
+      ignore_errors: ignore_errors
+      tags: test,awscli,awsclitest
+
+    - name: Test gruntwork cli
+      shell: >
+        gruntwork --version
+      register: output
+      failed_when:
+      - '"v0.1.1" not in output.stdout'
+      ignore_errors: ignore_errors
+      tags: test,gruntwork,gruntworktest,gruntworkcli,gruntworkclitest
+
+#    - name: Test ssh config
+#      shell: >
+#        ssh -tt bastion
+#      register: output
+#      failed_when:
+#      - '"Permission denied" not in output.stderr'
+#      ignore_errors: ignore_errors
+#      tags: test,sshconfig,testsshconfig
+
+    - name: Test packer
+      shell: >
+        packer version
+      register: output
+      failed_when:
+      - '"1.4.2" not in output.stdout'
+      ignore_errors: ignore_errors
+      tags: test,packer,packertest
+
+#    - name: Test cloud nuke
+#      shell: >
+#        cloud-nuke -v
+#      register: output
+#      failed_when:
+#        - '"v0.1.4" not in output.stdout'
+#      ignore_errors: ignore_errors
+#      tags: test,cloudnuke,cloudnuketest
+#
+#    - name: Test cloud-nuke cn alias
+#      lineinfile:
+#        path: '/home/{{ user }}/.bash_aliases'
+#        line: "alias cn='cloud-nuke'"
+#        state: present
+#      check_mode: no
+#      register: output
+#      failed_when: (output | changed) or (output | failed)
+#      ignore_errors: ignore_errors
+#      tags: test,cloudnuke,cloudnuketest
+#
+    - name: Test terragrunt
+      shell: >
+        terragrunt -v
+      register: output
+      failed_when:
+      - '"v0.21.10" not in output.stdout'
+      ignore_errors: ignore_errors
+      tags: test,terragrunt,terragrunttest
+
+    - name: Test terragrunt alias
+      lineinfile:
+        path: '/home/{{ user }}/.bash_aliases'
+        line: "alias tg='terragrunt'"
+        state: present
+      check_mode: no
+      register: output
+      failed_when: (output is changed) or (output is failed)
+      ignore_errors: ignore_errors
+      tags: test,terragrunt,terragrunttest
+
+# Goss is currently not installed.
+#    - name: Test goss
+#      shell: >
+#        goss --version
+#      register: output
+#      failed_when:
+#      - '"v0.3.6" not in output.stdout'
+#      ignore_errors: ignore_errors
+#      tags: test,goss,gosstest
+
+    - name: Test github gruntworks token exists in bashrc. Required by Packer build.
+      shell: "grep 'export GITHUB_OAUTH_TOKEN=' /home/{{ user }}/.bashrc"
+      register: output
+      failed_when: (output is failed)
+      ignore_errors: ignore_errors
+      tags: test,bashrc
+#    - name: Test gruntworks terraform-update-variable
+#      shell: >
+#        terraform-update-variable --help
+#      register: output
+#      failed_when:
+#      - '"terraform-update-variable [OPTIONS]" not in output.stdout'
+#      ignore_errors: ignore_errors
+#      tags: test,gruntworkshelpers,gruntworkshelperstest,terraformupdatevarialbe,terraformupdatevarialbetest
+    - name: Test gruntworks build-helpers
+      shell: >
+        build-docker-image --help
+      register: output
+      failed_when:
+      - '"build-docker-image [OPTIONS]" not in output.stdout'
+      ignore_errors: ignore_errors
+      tags: test,gruntworksmoduleci,gruntworksmodulecitest
+    - name: Test gruntkms
+      shell: >
+        gruntkms -v
+      register: output
+      failed_when:
+      - '"v0.0.8" not in output.stdout'
+      ignore_errors: ignore_errors
+      tags: test,gruntkms,gruntkmstest
+    - name: Test ecs-deploy module run-ecs-task
+      shell: >
+        run-ecs-task
+      register: output
+      failed_when:
+      - '"Run a single ECS Task" not in output.stdout'
+      ignore_errors: ignore_errors
+      tags: test,gruntworksmoduleecs,gruntworksmoduleecstest

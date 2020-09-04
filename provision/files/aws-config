@@ -1,0 +1,20 @@
+[default]
+output = json
+region = eu-west-1
+
+[profile cs-dev-full-access]
+role_arn = arn:aws:iam::441874514884:role/allow-full-access-from-other-accounts
+source_profile = cs-me
+
+[profile cs-stage-full-access]
+role_arn = arn:aws:iam::459772033517:role/allow-full-access-from-other-accounts
+source_profile = cs-me
+
+[profile cs-prod-full-access]
+role_arn = arn:aws:iam::733123287858:role/allow-full-access-from-other-accounts
+source_profile = cs-me
+
+[profile cs-shared-full-access]
+role_arn = arn:aws:iam::672647794770:role/allow-full-access-from-other-accounts
+source_profile = cs-me
+
