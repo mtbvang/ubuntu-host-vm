@@ -1,0 +1,20 @@
+---
+# Tests specific to the vagrant provisioning step. We're mainly checking that all sensitive files are there.
+- name: Run tests
+  hosts:
+    - all
+    - localhost
+  become: yes
+  become_user: "{{ user }}"
+  vars:
+    ignore_errors: no
+    user: 'vagrant'
+  environment:
+    GITHUB_OAUTH_TOKEN: "{{ github_oauth_token }}"
+  tasks:
+    - name: Test github gruntworks token exists in bashrc. Required by Packer build.
+      shell: "grep 'export GITHUB_OAUTH_TOKEN=' /home/{{ user }}/.bashrc"
+      register: output
+      failed_when: (output is failed)
+      ignore_errors: ignore_errors
+      tags: test,bashrc

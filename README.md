@@ -4,12 +4,28 @@
 
 This repository contains [Packer](https://packer.io/) templates for creating Ubuntu Vagrant boxes.
 
-## Current Boxes
+It is a private copy of the https://github.com/boxcutter/ubuntu repo. We use this to build the vagrant box published to
+vagrant cloud.
 
-We no longer provide pre-built binaries for these templates.
+We then use Vagrant and VMWare to spin up a ubuntu virtual machine that contains all the development tools and requirements.
+
+WARNING: THE CONTENT OF THIS PROJECT BUILD A PUBLIC VAGRANT BOX PUBLISHED TO VAGRANT CLOUD. Make sure there is no sensitive 
+information in the provision/playbook.yml and files used in the provisioning steps.
+
+## Vagrant up requirements
+
+To run the `make vagrant-up` command the following is required on your host machine.
+
+1. ~/OpenVPN folder containing the OpenVPN certificates. These are issued by a developer with devops access.
+1. ~/.ssh folder containing the SSH key added to your AWS IAM user to give you access to the AWS environments.
+1. GITHUB_OAUTH_TOKEN environment variable containing a token generated in your github account with access to the gruntwork repos.   
 
 ## Building the Vagrant boxes with Packer
 
+To build the CreditStretcher box you will need [VMware Fusion](https://www.vmware.com/products/fusion)/[VMware Workstation](https://www.vmware.com/products/workstation)
+
+    $ make build-cs
+    
 To build all the boxes, you will need [VirtualBox](https://www.virtualbox.org/wiki/Downloads), 
 [VMware Fusion](https://www.vmware.com/products/fusion)/[VMware Workstation](https://www.vmware.com/products/workstation) and
 [Parallels](http://www.parallels.com/products/desktop/whats-new/) installed.

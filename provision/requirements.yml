@@ -5,12 +5,12 @@
 - src: https://github.com/cmprescott/ansible-role-chrome
   name: chrome
   version: '0.2.4'
-- src: https://github.com/mtbvang/ansible-role-docker
+- src: https://github.com/geerlingguy/ansible-role-docker.git
   name: docker
-  version: '0.2.2'
+  version: '2.8.2'
 - src: https://github.com/gantsign/ansible-role-intellij
   name: intellij
-  version: '5.7.4'
+  version: '6.1.1'
 - src: https://github.com/geerlingguy/ansible-role-nodejs
   name: nodejs
   version: '5.0.0'
@@ -31,8 +31,8 @@
 - src: https://github.com/gantsign/ansible-role-visual-studio-code
   name: vscode
   version: '6.3.1'
-
-#- src: https://github.com/geerlingguy/ansible-role-nodejs
-#  name: nodejs
-#  version: '5.0.0'
-
+- src: https://github.com/creditstretcher/ansible-role-zoom
+  name: zoom
+  version: '0.1.0'
+- src: https://github.com/creditstretcher/ansible-role-vmware-workstation
+  name: vmware-workstation

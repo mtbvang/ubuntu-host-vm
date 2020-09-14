@@ -4,7 +4,7 @@
     "version": "{{env `VAGRANT_BOX_VERSION`}}",
     "github_oauth_token": "{{env `GITHUB_OAUTH_TOKEN`}}",
     "memory": "12228",
-    "cpus": "4"
+    "cpus": "2"
   },
   "builders": [{
     "type": "vmware-vmx",
@@ -21,7 +21,7 @@
       "ethernet0.present"    : "TRUE",
       "memsize": "{{user `memory`}}",
       "numvcpus": "{{user `cpus`}}",
-      "cpuid.coresPerSocket" : "2"
+      "cpuid.coresPerSocket" : "1"
     },
     "shutdown_command": "echo 'packer' | sudo -S shutdown -P now"
   }],
@@ -38,10 +38,11 @@
       "type": "shell",
       "inline": [
         "sudo apt-get update && sudo DEBIAN_FRONTEND=noninteractive apt-get -y upgrade",
-        "sudo DEBIAN_FRONTEND=noninteractive apt-get install -y tinyproxy software-properties-common sudo tzdata wget ca-certificates python-pip python3-pip python3-dev postgresql-client bash make gettext vim bash-completion iputils-ping git python-yaml",
+        "sudo DEBIAN_FRONTEND=noninteractive apt-get install -y gnome-tweak-tool tinyproxy software-properties-common sudo tzdata wget ca-certificates python-pip python3-pip python3-dev postgresql-client bash make gettext vim bash-completion iputils-ping git python-yaml",
         "sudo apt-add-repository ppa:ansible/ansible",
         "sudo apt-get update -y",
         "sudo apt-get install -y postgresql postgresql-contrib curl ansible",
+        "sudo pip install psutil",
         "sudo apt-get clean"
       ]
     },
@@ -62,6 +63,11 @@
     },
     {
       "type": "file",
+      "source": "provision/tests-packer.yml",
+      "destination": "/tmp/tests-packer.yml"
+    },
+    {
+      "type": "file",
       "source": "provision/templates",
       "destination": "/tmp/templates"
     },
@@ -74,8 +80,9 @@
       "type": "shell",
       "inline": [
         "sudo ansible-galaxy install -r /tmp/requirements.yml",
-        "sudo ansible-playbook /tmp/playbook.yml --extra-vars \"user=${USERNAME}\" --extra-vars \"group=${GROUPNAME}\" --extra-vars \"github_oauth_token=${GITHUB_OAUTH_TOKEN}\"",
-        "sudo ansible-playbook /tmp/tests.yml --extra-vars \"user=${USERNAME}\" --extra-vars \"github_oauth_token=${GITHUB_OAUTH_TOKEN}\"",
+        "sudo ansible-playbook /tmp/playbook.yml --extra-vars \"hosts=localhost\" --extra-vars \"user=${USERNAME}\" --extra-vars \"group=${GROUPNAME}\" --extra-vars \"github_oauth_token=${GITHUB_OAUTH_TOKEN}\"",
+        "sudo ansible-playbook /tmp/tests.yml --extra-vars \"hosts=localhost\" --extra-vars \"user=${USERNAME}\" --extra-vars \"github_oauth_token=${GITHUB_OAUTH_TOKEN}\"",
+        "sudo ansible-playbook /tmp/tests-packer.yml --extra-vars \"hosts=localhost\" --extra-vars \"user=${USERNAME}\"",
         "sudo chmod -R 0777 /home/vagrant/.ansible"
       ],
       "environment_vars": [

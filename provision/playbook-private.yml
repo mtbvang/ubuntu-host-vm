@@ -1,0 +1,53 @@
+---
+# This playbook contains CS private provision steps that are run on the vagrant VM.
+- name: Provision
+  become: yes
+  become_user: "{{ user }}"
+  hosts:
+    - "{{ hosts }}"
+    - all
+  vars:
+    user: 'vagrant'
+    hosts: 'localhost'
+    _github_oauth_token: '{{ github_oauth_token }}'
+
+  pre_tasks:
+  - name: Gathering facts
+    setup:
+
+  environment:
+    GITHUB_OAUTH_TOKEN: "{{ github_oauth_token }}"
+
+  roles:
+    - role: vmware-workstation
+      become: true
+      become_user: root
+      tags: vmware
+
+  tasks:
+    - name: Copy .bashrc file
+      template:
+        src: templates/bashrc.j2
+        dest: '/home/{{ user }}/.bashrc'
+        owner: '{{ user }}'
+        mode: '0644'
+      tags: bashrc
+    - name: Create .aws directory if it does not exist
+      file:
+        path: /home/{{ user }}/.aws
+        state: directory
+        mode: '0755'
+      tags: awsconfig
+    - name: Add aws config file
+      copy:
+        src: files/aws-config
+        dest: '/home/{{ user }}/.aws/config'
+        mode: 0644
+      tags: awsconfig
+    - name: Create ~/code directory if it does not exist
+      file:
+        path: /home/{{ user }}/code
+        state: directory
+        mode: '0755'
+      tags: codedir
+

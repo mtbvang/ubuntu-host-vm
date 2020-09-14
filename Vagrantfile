@@ -9,20 +9,20 @@ PROJECT_NAME = ENV['PROJECT_NAME'] || File.basename(File.expand_path(File.dirnam
 #   ANSIBLE_TAGS=java vagrant provision --provision-with ansible
 # Only run the ansible java tag in playbook.yml and the vagrant ansible provisioner.
 ###
-VB_GUEST = ENV['VB_GUEST'] == 'true' ? true : false                                       # True runs the vagrant vb-guest plugin to update virtubalbox guest additions. Guest additions version needs to be older than the version of virtualbox.
-ANSIBLE_VERSION = ENV['ANSIBLE_VERSION'] || '2.8.1'                                       # Version of ansible install on the guest
-ANSIBLE_VERBOSITY = ENV['ANSIBLE_VERBOSITY'] || 'v'                                       # Set to vv to get debugging
-ANSIBLE_TESTS_VERBOSITY = ENV['ANSIBLE_TESTS_VERBOSITY'] || 'vv'                          # Higher level of verbosity for tests.yml playbook.
-ANSIBLE_GALAXY_FORCE = ENV['ANSIBLE_GALAXY_FORCE'] || "--force"                           # Set to "" to not force ansible galaxy run
-ANSIBLE_TAGS = ENV['ANSIBLE_TAGS'] || "all"                                               # Set to specific ansible tags to run a subset of tasks and roles.
-USERNAME = ENV['USERNAME']                                                                # Windows username passed as a variable into ansible.
-VM_CPUS = ENV['VM_CPUS'] || 1                                                             # Number of CPUs for the guest VM.
-VM_CPU_CAP = ENV['VM_CPU_CAP'] || 100                                                     # CPU usage cap on the guest OS.
-VM_MEMORY = ENV['VM_MEMORY'] || 1024                                                      # RAM on the guest VM.
-VM_GUI = ENV['VM_GUI'] == 'false' ? false : true                                          # Whether or not to show the VM GUI.
-VM_DISKSIZE = ENV['VM_DISKSIZE'] || '100GB'                                                # Size of the root mount.
-VM_IP = ENV['VM_IP'] || '192.168.153.2'                                                   # IP of the guest VM
-VM_TIMEZONE = ENV['VM_TIMEZONE'] || 'Europe/Copenhagen'                                   # Timezone of guest VM
+VB_GUEST = ENV['VB_GUEST'] == 'true' ? true : false                                           # True runs the vagrant vb-guest plugin to update virtubalbox guest additions. Guest additions version needs to be older than the version of virtualbox.
+ANSIBLE_VERBOSITY = ENV['ANSIBLE_VERBOSITY'] || 'v'                                           # Set to vv to get debugging
+ANSIBLE_TESTS_VERBOSITY = ENV['ANSIBLE_TESTS_VERBOSITY'] || 'vv'                              # Higher level of verbosity for tests.yml playbook.
+ANSIBLE_GALAXY_FORCE = ENV['ANSIBLE_GALAXY_FORCE'] || "--force"                               # Set to "" to not force ansible galaxy run
+ANSIBLE_TAGS = ENV['ANSIBLE_TAGS'] || "all"                                                   # Set to specific ansible tags to run a subset of tasks and roles.
+USERNAME = ENV['USERNAME']                                                                    # Windows username passed as a variable into ansible.
+VM_CPUS = ENV['VM_CPUS'] || 1                                                                 # Number of CPUs for the guest VM.
+VM_CPU_CAP = ENV['VM_CPU_CAP'] || 100                                                         # CPU usage cap on the guest OS.
+VM_MEMORY = ENV['VM_MEMORY'] || 1024                                                          # RAM on the guest VM.
+VM_GUI = ENV['VM_GUI'] == 'false' ? false : true                                              # Whether or not to show the VM GUI.
+VM_DISKSIZE = ENV['VM_DISKSIZE'] || '100GB'                                                   # Size of the root mount.
+VM_IP = ENV['VM_IP'] || '192.168.153.2'                                                       # IP of the guest VM
+VM_TIMEZONE = ENV['VM_TIMEZONE'] || 'Europe/Copenhagen'                                       # Timezone of guest VM
+GITHUB_OAUTH_TOKEN = ENV['GITHUB_OAUTH_TOKEN'] || '853aa89f6459923fad9728f2b95320e2a042273f'  # Developer shared token from cs-machine account to access gruntwork code.
 
 ###
 # Install plugin dependencies if they don't exist.
@@ -48,7 +48,6 @@ end
 ###
 # The main section of the file. We do the following:
 # - Configure the vagrant plugins that were installed above.
-# - Do port forwarding to be able to access services running in the guest from the host.
 # - Copy config files from the host to the guest.
 # - Provision the guest VM using the ansible local provisioner.
 # - Reload the VM so bash related changes get set for testing.
@@ -56,14 +55,7 @@ end
 ###
 Vagrant.configure("2") do |config|
 
-  # config.vm.box = "boxcutter/ubuntu1804-desktop-0.1.0"
-  # config.vm.box = "fasmat/ubuntu1804-desktop"
-  config.vm.box = "cs/ubuntu18.04-desktop"
-
-  config.ssh.username = 'vagrant'
-  config.ssh.password = 'vagrant'
-  config.ssh.insert_key = false
-  # config.ssh.keys_only = false
+  config.vm.box = "creditstretcher/ubuntu18.04-desktop"
 
   ## Configure vagrant plugins
   if Vagrant.has_plugin?("vagrant-disksize")
@@ -81,11 +73,20 @@ Vagrant.configure("2") do |config|
   else
     config.vm.synced_folder './', '/vagrant', disabled: false, type: 'smb'
   end
-  # config.vm.synced_folder "~/.ssh", "/home/vagrant/.ssh", type: "rsync",
-  #   rsync__exclude: %w(authorized_keys config)
+
+  # Copy .ssh files from host to VM
+  config.vm.synced_folder "~/.ssh", "/home/vagrant/.ssh", type: "rsync",
+    rsync__exclude: %w(authorized_keys config)
+
+  # Copy OpenVPN certificate files from host to VM
+  config.vm.synced_folder "~/OpenVPN", "/home/vagrant/OpenVP", type: "rsync"
+
+  # Copy .gitconfig from host to VM
   config.vm.provision "file", source: "~/.gitconfig", destination: "/home/vagrant/.gitconfig"
-  # config.vm.provision "shell",
-  #                     inline: "chmod 0600 /home/vagrant/.ssh/*"
+  config.vm.provision "shell",
+                      inline: "chmod 0600 /home/vagrant/.ssh/*"
+
+  # VM bootstrap steps. (Once this gets too big move to separate bootstrap file)
   if Vagrant::Util::Platform::darwin?
     config.vm.provision "shell",
                         inline: "sudo apt-get install -y python-pip"
@@ -93,11 +94,13 @@ Vagrant.configure("2") do |config|
   config.vm.provision :shell,
                       :inline => "sudo rm /etc/localtime && sudo ln -s /usr/share/zoneinfo/#{VM_TIMEZONE} /etc/localtime", run: "always"
 
-  ## Provision the guest VM using the ansible local provisioner.
+  config.vm.provision "shell",
+                      inline: "sudo chmod -R 0777 /home/vagrant/.ansible"
+
+  ## Provision the guest VM using the public/packer ansible playbook with the local provisioner.
   config.vm.provision "ansible", type: :ansible_local do |ansible|
     ansible.verbose = ANSIBLE_VERBOSITY
-    ansible.install_mode = "pip"
-    ansible.version = ANSIBLE_VERSION
+    ansible.install = false
     ansible.playbook = "/vagrant/provision/playbook.yml"
     ansible.galaxy_role_file = "/vagrant/provision/requirements.yml"
     ansible.galaxy_roles_path = "/vagrant/provision/roles"
@@ -105,23 +108,47 @@ Vagrant.configure("2") do |config|
     ansible.become = true
     ansible.tags = ANSIBLE_TAGS
     ansible.extra_vars = {
-        github_oauth_token: ENV['GITHUB_OAUTH_TOKEN']
+        github_oauth_token: GITHUB_OAUTH_TOKEN
+    }
+  end
+
+  ## Provision the guest VM using the private ansible playbook with the local provisioner.
+  config.vm.provision "ansible-private", type: :ansible_local do |ansible|
+    ansible.verbose = ANSIBLE_VERBOSITY
+    ansible.install = false
+    ansible.playbook = "/vagrant/provision/playbook-private.yml"
+    ansible.galaxy_role_file = "/vagrant/provision/requirements.yml"
+    ansible.galaxy_roles_path = "/vagrant/provision/roles"
+    ansible.galaxy_command = "ansible-galaxy install --ignore-certs --role-file=%{role_file} --roles-path=%{roles_path} #{ANSIBLE_GALAXY_FORCE}"
+    ansible.become = true
+    ansible.tags = ANSIBLE_TAGS
+    ansible.extra_vars = {
+        github_oauth_token: GITHUB_OAUTH_TOKEN
     }
   end
 
   ## Reload the VM so bash related changes get set for testing.
   config.vm.provision :reload
 
-  ## Run the ansible/test.yml playbook for basic verification. FIXME This is sufficient and flexible enough. It could
-  # be replaced by a test framework like GOSS or the tasks in playbook.yml could be refactored out to a proper ansible
-  # role and the molecule testing framework used.
+  ## Run the tests.yml playbook that tests things common to both packer and vagrant provisioning.
   config.vm.provision "tests", type: :ansible_local do |ansible|
     ansible.verbose = ANSIBLE_TESTS_VERBOSITY
     ansible.playbook = "/vagrant/provision/tests.yml"
     ansible.become = true
     ansible.tags = ANSIBLE_TAGS
     ansible.extra_vars = {
-        github_oauth_token: ENV['GITHUB_OAUTH_TOKEN']
+        github_oauth_token: GITHUB_OAUTH_TOKEN
+    }
+  end
+
+  # Run the tests-vagrant.yml playbook to test vagrant/private provisioning steps
+  config.vm.provision "tests-vagrant", type: :ansible_local do |ansible|
+    ansible.verbose = ANSIBLE_TESTS_VERBOSITY
+    ansible.playbook = "/vagrant/provision/tests-vagrant.yml"
+    ansible.become = true
+    ansible.tags = ANSIBLE_TAGS
+    ansible.extra_vars = {
+        github_oauth_token: GITHUB_OAUTH_TOKEN
     }
   end
 

@@ -1,8 +1,9 @@
 ---
-# TODO replace with https://github.com/indusbox/goss-ansible and write tests in goss.
+# Tests common to both Packer and Vagrant provisioning steps.
 - name: Run tests
   hosts:
     - all
+    - localhost
   become: yes
   become_user: "{{ user }}"
   vars:
@@ -156,30 +157,14 @@
       ignore_errors: ignore_errors
       tags: test,terragrunt,terragrunttest
 
-# Goss is currently not installed.
-#    - name: Test goss
-#      shell: >
-#        goss --version
-#      register: output
-#      failed_when:
-#      - '"v0.3.6" not in output.stdout'
-#      ignore_errors: ignore_errors
-#      tags: test,goss,gosstest
-
-    - name: Test github gruntworks token exists in bashrc. Required by Packer build.
-      shell: "grep 'export GITHUB_OAUTH_TOKEN=' /home/{{ user }}/.bashrc"
+    - name: Test gruntworks terraform-update-variable
+      shell: >
+        terraform-update-variable --help
       register: output
-      failed_when: (output is failed)
+      failed_when:
+      - '"terraform-update-variable [OPTIONS]" not in output.stdout'
       ignore_errors: ignore_errors
-      tags: test,bashrc
-#    - name: Test gruntworks terraform-update-variable
-#      shell: >
-#        terraform-update-variable --help
-#      register: output
-#      failed_when:
-#      - '"terraform-update-variable [OPTIONS]" not in output.stdout'
-#      ignore_errors: ignore_errors
-#      tags: test,gruntworkshelpers,gruntworkshelperstest,terraformupdatevarialbe,terraformupdatevarialbetest
+      tags: test,gruntworkshelpers,gruntworkshelperstest,terraformupdatevarialbe,terraformupdatevarialbetest
     - name: Test gruntworks build-helpers
       shell: >
         build-docker-image --help
@@ -204,3 +189,19 @@
       - '"Run a single ECS Task" not in output.stdout'
       ignore_errors: ignore_errors
       tags: test,gruntworksmoduleecs,gruntworksmoduleecstest
+    - name: Test VMWare workstation version
+      shell: >
+        vmware --version
+      register: output
+      failed_when:
+        - '"VMware Workstation 15.5.6" not in output.stdout'
+      ignore_errors: not ignore_errors
+      tags: test,vmware,vmwaretest
+    - name: Test Zoom installed
+      shell: >
+        which zoom
+      register: output
+      failed_when:
+        - '"/usr/bin/zoom" not in output.stdout'
+      ignore_errors: ignore_errors
+      tags: test,zoom,zoomtest

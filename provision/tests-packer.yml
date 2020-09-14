@@ -1,0 +1,18 @@
+---
+# Tests specific to the packer provisioning step. We're mainly checking that no sensitive info made it into the public box/VM file.
+- name: Run tests
+  hosts:
+    - all
+    - localhost
+  become: yes
+  become_user: "{{ user }}"
+  vars:
+    ignore_errors: no
+    user: 'vagrant'
+  tasks:
+    - name: Test github gruntworks token does not exists in bashrc.
+      shell: "grep 'export GITHUB_OAUTH_TOKEN=' /home/{{ user }}/.bashrc && cat /home/{{ user }}/.bashrc"
+      register: output
+      failed_when: (output is not failed)
+      ignore_errors: ignore_errors
+      tags: test,bashrc
