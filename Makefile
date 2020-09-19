@@ -27,7 +27,7 @@ box/vmware/%$(BOX_SUFFIX) box/virtualbox/%$(BOX_SUFFIX) box/parallels/%$(BOX_SUF
 VERSION_UBUNTU_HOST ?= 0.1.0
 VERSION_LONG_UBUNTU_HOST ?= v${VERSION_UBUNTU_HOST}
 
-.PHONY: all build-* build-cs clean assure dconf-load deliver assure_atlas assure_atlas_vmware assure_atlas_virtualbox assure_atlas_parallels vagrant-*
+.PHONY: all ansible-* build-* build-cs clean assure dconf-load deliver assure_atlas assure_atlas_vmware assure_atlas_virtualbox assure_atlas_parallels vagrant-*
 
 
 help:
@@ -115,7 +115,8 @@ VAGRANT_BOX_VERSION = ${VERSION_UBUNTU_HOST}
 VAGRANT_VM_MEMORY := $(or $(VAGRANT_VM_MEMORY),12288)
 VAGRANT_VM_CPUS := $(or $(VAGRANT_VM_CPUS),4)
 VAGRANT_ANSIBLE_GALAXY_FORCE ?= "--force"
-vagrantEnvVars = VM_MEMORY=$(VAGRANT_VM_MEMORY) VM_CPUS=$(VAGRANT_VM_CPUS) ANSIBLE_GALAXY_FORCE=$(VAGRANT_ANSIBLE_GALAXY_FORCE)
+vagrantEnvVars = VAGRANT_BOX_VERSION=$(VAGRANT_BOX_VERSION) VM_MEMORY=$(VAGRANT_VM_MEMORY) VM_CPUS=$(VAGRANT_VM_CPUS) ANSIBLE_GALAXY_FORCE=$(VAGRANT_ANSIBLE_GALAXY_FORCE)
+vagrantEnvVarsTesting = VAGRANT_BOX_VERSION=$(VAGRANT_BOX_VERSION) VM_MEMORY=2048 VM_CPUS=1 ANSIBLE_GALAXY_FORCE=$(VAGRANT_ANSIBLE_GALAXY_FORCE)
 
 vagrant-box-add: ## Add the built vagrant box locally so that it can be used by the Vagrantfile
 	@vagrant box remove creditstretcher/ubuntu18.04-desktop; \
@@ -128,6 +129,9 @@ vagrant-cloud-publish:  ## Publish the packer built vagrant box to vagrant cloud
 	if [[ "$$PUBLISH_CONFIRMATION" = "yes" ]]; then \
 		vagrant cloud publish creditstretcher/ubuntu18.04-desktop $(VAGRANT_BOX_VERSION) vmware_desktop box/vmware/cs-ubuntu1804-desktop-$(VAGRANT_BOX_VERSION).box -d "A VMWare Ubuntu desktop host VM with development tools installed." --version-description "version $(VAGRANT_BOX_VERSION)" --release --short-description "Download me!"; \
 	fi;
+
+vagrant-up-testing: ## vagrant up VM with $VAGRANT_VM_MEMORY GB ram (default=2) and $VAGRANT_VM_CPUS (default=1) cpus for testing purposes.
+	$(vagrantEnvVarsTesting) vagrant up --debug
 
 vagrant-up: ## vagrant up VM with $VAGRANT_VM_MEMORY GB ram (default=12) and $VAGRANT_VM_CPUS (default=4) cpus.
 	$(vagrantEnvVars) vagrant up
@@ -143,7 +147,7 @@ vagrant-recreate: ## vagrant destroy and up a VM with $VAGRANT_VM_MEMORY GB ram 
 	$(vagrantEnvVars) vagrant up
 
 vagrant-provision: ## vagrant provision VM
-	$(vagrantEnvVars) vagrant provision
+	ANSIBLE_GALAXY_FORCE=$(VAGRANT_ANSIBLE_GALAXY_FORCE) vagrant provision
 
 vagrant-provision-private: ## vagrant provision VM with private playbook and test.
 	$(vagrantEnvVars) vagrant provision --provision-with=ansible-private,tests
@@ -158,15 +162,25 @@ vagrant-halt: ## vagrant halt, stops the vagrant machine
 	vagrant halt
 
 ansible-provision: ## Runs ansible playbook used by packer that provisions generic VM.
-	@read -r -p "Ansible tags to run (command separated list or 'all' to run everything): " TAGS; \
-	cd /vagrant && PYTHONUNBUFFERED=1 ANSIBLE_FORCE_COLOR=true ansible-playbook provision/playbook.yml --tags=$$TAGS --extra-vars "user=vagrant" --extra-vars "group=vagrant" --extra-vars "github_oauth_token=${GITHUB_OAUTH_TOKEN}"
+	@if [[ -z "${TAGS}" ]]; then \
+		read -r -p "Ansible tags to run (command separated list or 'all' to run everything): " TAGS; \
+	fi; \
+	ansible-galaxy install -p provision/roles -r provision/requirements.yml; \
+	PYTHONUNBUFFERED=1 ANSIBLE_FORCE_COLOR=true ansible-playbook provision/playbook.yml --tags=$$TAGS --extra-vars "user=vagrant" --extra-vars "group=vagrant" --extra-vars "github_oauth_token=${GITHUB_OAUTH_TOKEN}"
 
 ansible-provision-vagrant: ## Runs ansible playbook used by vagrant to configure user specific details in generic VM.
 	@read -r -p "Ansible tags to run (command separated list or 'all' to run everything): " TAGS; \
-	cd /vagrant && PYTHONUNBUFFERED=1 ANSIBLE_FORCE_COLOR=true ansible-playbook provision/playbook-vagrant.yml --tags=$$TAGS --extra-vars "user=vagrant" --extra-vars "group=vagrant" --extra-vars "github_oauth_token=${GITHUB_OAUTH_TOKEN}"
+	ansible-galaxy install -p provision/roles -r provision/requirements.yml; \
+	PYTHONUNBUFFERED=1 ANSIBLE_FORCE_COLOR=true ansible-playbook provision/playbook-vagrant.yml --tags=$$TAGS --extra-vars "user=vagrant" --extra-vars "group=vagrant" --extra-vars "github_oauth_token=${GITHUB_OAUTH_TOKEN}"
+
+ansible-provision-packer: ## Runs ansible playbook used by packer.
+	@read -r -p "Ansible tags to run (command separated list or 'all' to run everything): " TAGS; \
+	ansible-galaxy install -p provision/roles -r provision/requirements.yml; \
+	PYTHONUNBUFFERED=1 ANSIBLE_FORCE_COLOR=true ansible-playbook provision/playbook-packer.yml --tags=$$TAGS --extra-vars "user=vagrant" --extra-vars "group=vagrant" --extra-vars "github_oauth_token=${GITHUB_OAUTH_TOKEN}" -vv
 
 ansible-tests: ## runs ansible tests.yml playbook from guest
-	cd /vagrant && PYTHONUNBUFFERED=1 ANSIBLE_FORCE_COLOR=true ansible-playbook --limit="host,host2" --inventory-file=/tmp/vagrant-ansible/inventory --become -vv --tags=all /vagrant/host/provision/tests.yml
+	@ansible-galaxy install -p provision/roles -r provision/requirements.yml; \
+	PYTHONUNBUFFERED=1 ANSIBLE_FORCE_COLOR=true ansible-playbook --limit="host,host2" --inventory-file=/tmp/vagrant-ansible/inventory --become -vv --tags=all /vagrant/host/provision/tests.yml
 
 clean-bak-files: ## Remove all .bak files create by sed -i.bak option
 	@rm -f .*.bak || true; \

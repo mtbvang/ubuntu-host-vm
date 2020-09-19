@@ -1,0 +1,45 @@
+---
+# This playbook is used only by packer and is to only contain non sensitive/public provisioning steps.
+# It will produce a vagrant box file that will be uploaded to vagrant cloud for distribution.
+- name: Provision
+  become: yes
+  become_user: "{{ user }}"
+  hosts:
+    - localhost
+    - all
+  vars:
+    _vmware_workstation_version: '15.5.6'
+    _mailhog_docker_image_version: 'latest'
+    _postgres_docker_image_version: '11.5-alpine'
+    _backend_docker_image_version: '12.14.1'
+    _frontend_docker_image_version: '8'
+    _localdev_docker_image_version: '18.04'
+
+  pre_tasks:
+  - name: Gathering facts
+    setup:
+
+  roles:
+  - role: vmware-workstation
+    workstation_tempdir: "/tmp"
+    workstation_current_version: '{{ _vmware_workstation_version }} '
+    become: true
+    become_user: root
+    tags: vmware
+
+  tasks:
+  - name: Pull docker images
+    shell: >
+      docker pull mailhog/mailhog:{{ _mailhog_docker_image_version }};
+      docker pull postgres:{{ _postgres_docker_image_version }};
+      docker pull node:{{ _backend_docker_image_version }};
+      docker pull markadams/chromium-xvfb-js:{{ _frontend_docker_image_version }};
+      docker pull ubuntu:{{ _localdev_docker_image_version }};
+    register: output
+    become: true
+    become_user: root
+    tags: dockerpull
+
+  - debug: msg="{{ output.stdout }}"
+
+  - debug: msg="{{ output.stderr }}"

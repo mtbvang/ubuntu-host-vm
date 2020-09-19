@@ -18,12 +18,6 @@
   environment:
     GITHUB_OAUTH_TOKEN: "{{ github_oauth_token }}"
 
-  roles:
-    - role: vmware-workstation
-      become: true
-      become_user: root
-      tags: vmware
-
   tasks:
     - name: Copy .bashrc file
       template:

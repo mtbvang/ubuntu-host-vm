@@ -33,6 +33,7 @@
   version: '6.3.1'
 - src: https://github.com/creditstretcher/ansible-role-zoom
   name: zoom
-  version: '0.1.0'
+  version: '0.1.1'
 - src: https://github.com/creditstretcher/ansible-role-vmware-workstation
   name: vmware-workstation
+  version: '0.1.0'

@@ -9,7 +9,7 @@
     - all
   vars:
     user: 'vagrant'
-    _awscli_version: '1.18.80'
+    _awscli_version: '1.18.140'
     _github_oauth_token: '{{ github_oauth_token }}'
     _packer_version: "1.4.2"
     _openvpn_admin: 'v0.9.2'
@@ -21,7 +21,9 @@
     _gruntwork_cli_version: '15088626'
     _aws_auth_version: 'v0.34.2'
     _nodejs_version: '12.14.1'
-#    _docker_version: '18.06'
+    _vmware_workstation_version: '15.5.6'
+    _docker_version: '5:19.03.12~3-0~ubuntu-bionic'
+    _postgresql_client_version: '11'
 
   pre_tasks:
   - name: Gathering facts
@@ -46,6 +48,20 @@
       - unzip
       - psutils
       - libegl1-mesa
+      - curl
+      - ca-certificates
+      - gnupg
+      - software-properties-common
+      - tzdata
+      - ca-certificates
+      - python-pip
+      - python3-pip
+      - python3-dev
+      - gettext
+      - vim
+      - bash-completion
+      - iputils-ping
+      - python-yaml
     become: true
     become_user: root
     tags: packages
@@ -54,10 +70,6 @@
     GITHUB_OAUTH_TOKEN: "{{ github_oauth_token }}"
 
   roles:
-  - role: vmware-workstation
-    become: true
-    become_user: root
-    tags: vmware
   - role: nodejs
     nodejs_version: "12.x"
     become: true
@@ -68,6 +80,7 @@
     become_user: root
     tags: zoom
   - role: docker
+    docker_package: "docker-{{ docker_edition }}={{ _docker_version }}"
     docker_users:
       - "{{ user }}"
     docker_install_compose: true
@@ -219,12 +232,14 @@
       - build-helpers
     become: true
     become_user: root
+    args:
+        creates: /usr/local/bin/build-docker-image
     tags: gruntworksmoduleci
   # FIXME rewrite this to pick up file permission changes.
   - name: Install openvpn-admin. Requires gruntwork-install
     shell: >
-      gruntwork-install --binary-name openvpn-admin --repo https://github.com/gruntwork-io/package-openvpn --tag {{ _openvpn_admin }}
-      && chmod 0755 /usr/local/bin/openvpn-admin
+      gruntwork-install --binary-name openvpn-admin --repo https://github.com/gruntwork-io/package-openvpn --tag {{ _openvpn_admin }};
+      chmod 0755 /usr/local/bin/openvpn-admin
     become: true
     become_user: root
     args:
@@ -239,8 +254,8 @@
     tags: awsauth
   - name: Install gruntkms. Requires gruntwork-install
     shell: >
-      /usr/local/bin/gruntwork-install --binary-name 'gruntkms' --repo https://github.com/gruntwork-io/gruntkms --tag {{ _grunt_kms_version }}
-      && chmod 0755 /usr/local/bin/gruntkms
+      /usr/local/bin/gruntwork-install --binary-name 'gruntkms' --repo https://github.com/gruntwork-io/gruntkms --tag {{ _grunt_kms_version }};
+      chmod 0755 /usr/local/bin/gruntkms
     args:
       creates: /usr/local/bin/gruntkms
     become: true
@@ -269,9 +284,9 @@
 # To get the asset number for the download url run: curl --header 'Authorization: token ${GITHUB_OAUTH_TOKEN}' -L https://${GITHUB_OAUTH_TOKEN}:@api.github.com/repos/gruntwork-io/gruntwork/releases/latest
   - name: Install gruntwork cli tool
     shell: >
-      curl --header 'Authorization: token {{ github_oauth_token }}' --header 'Accept: application/octet-stream' -L https://{{ github_oauth_token }}:@api.github.com/repos/gruntwork-io/gruntwork/releases/assets/{{ _gruntwork_cli_version }} -o gruntwork_linux_amd64
-      && mv gruntwork_linux_amd64 /usr/local/bin/gruntwork
-      && chmod 0755 /usr/local/bin/gruntwork
+      curl --header 'Authorization: token {{ github_oauth_token }}' --header 'Accept: application/octet-stream' -L https://{{ github_oauth_token }}:@api.github.com/repos/gruntwork-io/gruntwork/releases/assets/{{ _gruntwork_cli_version }} -o gruntwork_linux_amd64;
+      mv gruntwork_linux_amd64 /usr/local/bin/gruntwork;
+      chmod 0755 /usr/local/bin/gruntwork
     args:
       chdir: /usr/local/bin/
       creates: gruntwork
@@ -283,9 +298,38 @@
 
   - name: Set node version
     shell: >
-      npm install --silent -g n
-      && n {{ _nodejs_version }}
+      npm install --silent -g n;
+      n {{ _nodejs_version }}
     become: true
     become_user: root
     tags:
       - nodejs
+
+  - name: Check pg_dump version
+    shell: >
+      pg_dump -V
+    register: pg_dump_version
+    ignore_errors: true
+    tags: postgresql
+  - name: Install postgres client
+    shell: >
+      apt purge -y postgresql*;
+      apt-get remove -y postgresql-client-common;
+      wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | apt-key add - ;
+      sh -c 'echo "deb http://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg main" > /etc/apt/sources.list.d/pgdg.list';
+      apt-get update -qq > /dev/null;
+      apt-get -y install postgresql-client-{{ _postgresql_client_version }}
+    when: pg_dump_version.stdout.find(_postgresql_client_version) == -1
+    become: true
+    become_user: root
+    tags: postgresql
+
+  - name: Install aws-encryption-cli
+    pip:
+      name:
+        - aws-encryption-sdk==1.4.1
+        - aws-encryption-sdk-cli==1.1.7
+        - requests
+    become: true
+    become_user: root
+    tags: awsencryptioncli

@@ -23,7 +23,7 @@ VM_DISKSIZE = ENV['VM_DISKSIZE'] || '100GB'                                     
 VM_IP = ENV['VM_IP'] || '192.168.153.2'                                                       # IP of the guest VM
 VM_TIMEZONE = ENV['VM_TIMEZONE'] || 'Europe/Copenhagen'                                       # Timezone of guest VM
 GITHUB_OAUTH_TOKEN = ENV['GITHUB_OAUTH_TOKEN'] || '853aa89f6459923fad9728f2b95320e2a042273f'  # Developer shared token from cs-machine account to access gruntwork code.
-
+BOX_VERSION = ENV['VAGRANT_BOX_VERSION'] || ">= 0"
 ###
 # Install plugin dependencies if they don't exist.
 ###
@@ -56,6 +56,7 @@ end
 Vagrant.configure("2") do |config|
 
   config.vm.box = "creditstretcher/ubuntu18.04-desktop"
+  config.vm.box_version = BOX_VERSION
 
   ## Configure vagrant plugins
   if Vagrant.has_plugin?("vagrant-disksize")
@@ -79,7 +80,10 @@ Vagrant.configure("2") do |config|
     rsync__exclude: %w(authorized_keys config)
 
   # Copy OpenVPN certificate files from host to VM
-  config.vm.synced_folder "~/OpenVPN", "/home/vagrant/OpenVP", type: "rsync"
+  config.vm.synced_folder "~/OpenVPN", "/home/vagrant/OpenVPN", type: "rsync"
+
+  # Copy AWS credentias from host to VM
+  config.vm.synced_folder "~/.aws", "/home/vagrant/.aws", type: "rsync"
 
   # Copy .gitconfig from host to VM
   config.vm.provision "file", source: "~/.gitconfig", destination: "/home/vagrant/.gitconfig"

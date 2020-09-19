@@ -16,3 +16,11 @@
       failed_when: (output is not failed)
       ignore_errors: ignore_errors
       tags: test,bashrc
+    - name: Test VMWare workstation version
+      shell: >
+        vmware --version
+      register: output
+      failed_when:
+        - '"VMware Workstation 15.5.6" not in output.stdout'
+      ignore_errors: not ignore_errors
+      tags: test,vmware,vmwaretest
