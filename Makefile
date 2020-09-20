@@ -147,7 +147,7 @@ vagrant-recreate: ## vagrant destroy and up a VM with $VAGRANT_VM_MEMORY GB ram 
 	$(vagrantEnvVars) vagrant up
 
 vagrant-provision: ## vagrant provision VM
-	ANSIBLE_GALAXY_FORCE=$(VAGRANT_ANSIBLE_GALAXY_FORCE) vagrant provision
+	$(vagrantEnvVars) vagrant provision
 
 vagrant-provision-private: ## vagrant provision VM with private playbook and test.
 	$(vagrantEnvVars) vagrant provision --provision-with=ansible-private,tests
