@@ -70,6 +70,10 @@
     GITHUB_OAUTH_TOKEN: "{{ github_oauth_token }}"
 
   roles:
+  - role: slack
+    become: true
+    become_user: root
+    tags: slack
   - role: nodejs
     nodejs_version: "12.x"
     become: true
@@ -108,7 +112,7 @@
     intellij_version: '2020.2.1'
     intellij_download_dir: "{{ x_ansible_download_dir | default(ansible_env.HOME + '~/.ansible/tmp/downloads') }}"
     users:
-      - username: vagrant
+      - username: '{{ user }}'
         intellij_plugins:
           - zielu.gittoolbox
           - org.intellij.plugins.hcl
@@ -333,3 +337,12 @@
     become: true
     become_user: root
     tags: awsencryptioncli
+
+  - name: Install keybase
+    shell: >
+      cd /tmp;
+      curl --remote-name https://prerelease.keybase.io/keybase_amd64.deb;
+      sudo apt install -y ./keybase_amd64.deb
+    become: true
+    become_user: root
+    tags: keybase

@@ -11,7 +11,7 @@
     user: 'vagrant'
   tasks:
     - name: Test github gruntworks token does not exists in bashrc.
-      shell: "grep 'export GITHUB_OAUTH_TOKEN=' /home/{{ user }}/.bashrc && cat /home/{{ user }}/.bashrc"
+      shell: "grep 'export GITHUB_OAUTH_TOKEN=' /home/{{ user }}/.bashrc"
       register: output
       failed_when: (output is not failed)
       ignore_errors: ignore_errors

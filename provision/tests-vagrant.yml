@@ -9,8 +9,6 @@
   vars:
     ignore_errors: no
     user: 'vagrant'
-  environment:
-    GITHUB_OAUTH_TOKEN: "{{ github_oauth_token }}"
   tasks:
     - name: Test github gruntworks token exists in bashrc. Required by Packer build.
       shell: "grep 'export GITHUB_OAUTH_TOKEN=' /home/{{ user }}/.bashrc"

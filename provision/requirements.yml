@@ -37,3 +37,5 @@
 - src: https://github.com/creditstretcher/ansible-role-vmware-workstation
   name: vmware-workstation
   version: '0.1.0'
+- src: https://github.com/avnes/ansible-role-slack
+  name: slack

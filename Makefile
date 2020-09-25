@@ -166,21 +166,22 @@ ansible-provision: ## Runs ansible playbook used by packer that provisions gener
 		read -r -p "Ansible tags to run (command separated list or 'all' to run everything): " TAGS; \
 	fi; \
 	ansible-galaxy install -p provision/roles -r provision/requirements.yml; \
-	PYTHONUNBUFFERED=1 ANSIBLE_FORCE_COLOR=true ansible-playbook provision/playbook.yml --tags=$$TAGS --extra-vars "user=vagrant" --extra-vars "group=vagrant" --extra-vars "github_oauth_token=${GITHUB_OAUTH_TOKEN}"
+	PYTHONUNBUFFERED=1 ANSIBLE_FORCE_COLOR=true ansible-playbook provision/playbook.yml --tags=$$TAGS --extra-vars "user=${USER}" --extra-vars "github_oauth_token=${GITHUB_OAUTH_TOKEN}"
 
 ansible-provision-vagrant: ## Runs ansible playbook used by vagrant to configure user specific details in generic VM.
 	@read -r -p "Ansible tags to run (command separated list or 'all' to run everything): " TAGS; \
 	ansible-galaxy install -p provision/roles -r provision/requirements.yml; \
-	PYTHONUNBUFFERED=1 ANSIBLE_FORCE_COLOR=true ansible-playbook provision/playbook-vagrant.yml --tags=$$TAGS --extra-vars "user=vagrant" --extra-vars "group=vagrant" --extra-vars "github_oauth_token=${GITHUB_OAUTH_TOKEN}"
+	PYTHONUNBUFFERED=1 ANSIBLE_FORCE_COLOR=true ansible-playbook provision/playbook-vagrant.yml --tags=$$TAGS --extra-vars "user=${USER}" --extra-vars "github_oauth_token=${GITHUB_OAUTH_TOKEN}"
 
 ansible-provision-packer: ## Runs ansible playbook used by packer.
 	@read -r -p "Ansible tags to run (command separated list or 'all' to run everything): " TAGS; \
 	ansible-galaxy install -p provision/roles -r provision/requirements.yml; \
-	PYTHONUNBUFFERED=1 ANSIBLE_FORCE_COLOR=true ansible-playbook provision/playbook-packer.yml --tags=$$TAGS --extra-vars "user=vagrant" --extra-vars "group=vagrant" --extra-vars "github_oauth_token=${GITHUB_OAUTH_TOKEN}" -vv
+	PYTHONUNBUFFERED=1 ANSIBLE_FORCE_COLOR=true ansible-playbook provision/playbook-packer.yml --tags=$$TAGS --extra-vars "user=${USER}" --extra-vars "github_oauth_token=${GITHUB_OAUTH_TOKEN}" -vv
 
 ansible-tests: ## runs ansible tests.yml playbook from guest
 	@ansible-galaxy install -p provision/roles -r provision/requirements.yml; \
-	PYTHONUNBUFFERED=1 ANSIBLE_FORCE_COLOR=true ansible-playbook --limit="host,host2" --inventory-file=/tmp/vagrant-ansible/inventory --become -vv --tags=all /vagrant/host/provision/tests.yml
+	PYTHONUNBUFFERED=1 ANSIBLE_FORCE_COLOR=true ansible-playbook -vv --tags=all provision/tests.yml; \
+	PYTHONUNBUFFERED=1 ANSIBLE_FORCE_COLOR=true ansible-playbook -vv --tags=all provision/tests-vagrant.yml;
 
 clean-bak-files: ## Remove all .bak files create by sed -i.bak option
 	@rm -f .*.bak || true; \

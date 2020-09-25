@@ -9,8 +9,6 @@
   vars:
     ignore_errors: no
     user: 'vagrant'
-  environment:
-    GITHUB_OAUTH_TOKEN: "{{ github_oauth_token }}"
   tasks:
     - name: Test docker by running hello world image
       shell: >
@@ -197,3 +195,11 @@
         - '"/usr/bin/zoom" not in output.stdout'
       ignore_errors: ignore_errors
       tags: test,zoom,zoomtest
+    - name: Test Slack installed
+      shell: >
+        which slack
+      register: output
+      failed_when:
+        - '"/usr/bin/slack" not in output.stdout'
+      ignore_errors: ignore_errors
+      tags: test,slack,slacktest
