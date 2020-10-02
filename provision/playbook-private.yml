@@ -45,3 +45,15 @@
         mode: '0755'
       tags: codedir
 
+    - name: Set fs.inotify.max_user_watches to 524288 in /etc/sysctl.conf
+      ansible.posix.sysctl:
+        name: fs.inotify.max_user_watches
+        value: '524288'
+        state: present
+      become: true
+      become_user: root
+      tags: inotify
+
+
+
+

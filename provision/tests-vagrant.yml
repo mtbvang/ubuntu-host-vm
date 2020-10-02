@@ -16,3 +16,11 @@
       failed_when: (output is failed)
       ignore_errors: ignore_errors
       tags: test,bashrc
+    - name: Test inotify limit set to 524288
+      shell: >
+        cat /proc/sys/fs/inotify/max_user_watches
+      register: output
+      failed_when:
+        - '"524288" not in output.stdout'
+      ignore_errors: ignore_errors
+      tags: test,inotidy,testinotify

@@ -1,41 +1,45 @@
 ---
-- src: https://github.com/mtbvang/ansible-role-awscli
-  name: awscli
-  version: 'v1.0.1'
-- src: https://github.com/cmprescott/ansible-role-chrome
-  name: chrome
-  version: '0.2.4'
-- src: https://github.com/geerlingguy/ansible-role-docker.git
-  name: docker
-  version: '2.8.2'
-- src: https://github.com/gantsign/ansible-role-intellij
-  name: intellij
-  version: '6.1.1'
-- src: https://github.com/geerlingguy/ansible-role-nodejs
-  name: nodejs
-  version: '5.0.0'
-- src: https://github.com/geerlingguy/ansible-role-packer
-  name: packer
-  version: '1.0.1'
-- src: https://github.com/mtbvang/ansible-role-terraform
-  name: terraform
-  version: 'v0.1.0'
-- src: https://github.com/mtbvang/ansible-role-terragrunt
-  name: terragrunt
-  version: 'v0.1.0'
-- src: https://github.com/jdauphant/ansible-role-vagrant
-  name: vagrant
-  version: 'v1.1'
-- src: https://github.com/cjsteel/ansible-role-virtualbox
-  name: virtualbox
-- src: https://github.com/gantsign/ansible-role-visual-studio-code
-  name: vscode
-  version: '6.3.1'
-- src: https://github.com/creditstretcher/ansible-role-zoom
-  name: zoom
-  version: '0.1.1'
-- src: https://github.com/creditstretcher/ansible-role-vmware-workstation
-  name: vmware-workstation
-  version: '0.1.0'
-- src: https://github.com/avnes/ansible-role-slack
-  name: slack
+roles:
+  - src: https://github.com/mtbvang/ansible-role-awscli
+    name: awscli
+    version: 'v1.0.1'
+  - src: https://github.com/cmprescott/ansible-role-chrome
+    name: chrome
+    version: '0.2.4'
+  - src: https://github.com/geerlingguy/ansible-role-docker.git
+    name: docker
+    version: '2.8.2'
+  - src: https://github.com/gantsign/ansible-role-intellij
+    name: intellij
+    version: '6.1.1'
+  - src: https://github.com/geerlingguy/ansible-role-nodejs
+    name: nodejs
+    version: '5.0.0'
+  - src: https://github.com/geerlingguy/ansible-role-packer
+    name: packer
+    version: '1.0.1'
+  - src: https://github.com/mtbvang/ansible-role-terraform
+    name: terraform
+    version: 'v0.1.0'
+  - src: https://github.com/mtbvang/ansible-role-terragrunt
+    name: terragrunt
+    version: 'v0.1.0'
+  - src: https://github.com/jdauphant/ansible-role-vagrant
+    name: vagrant
+    version: 'v1.1'
+  - src: https://github.com/cjsteel/ansible-role-virtualbox
+    name: virtualbox
+  - src: https://github.com/gantsign/ansible-role-visual-studio-code
+    name: vscode
+    version: '6.3.1'
+  - src: https://github.com/creditstretcher/ansible-role-zoom
+    name: zoom
+    version: '0.1.1'
+  - src: https://github.com/creditstretcher/ansible-role-vmware-workstation
+    name: vmware-workstation
+    version: '0.1.0'
+  - src: https://github.com/avnes/ansible-role-slack
+    name: slack
+
+collections:
+  - name: ansible.posix

@@ -24,7 +24,7 @@ box/vmware/%$(BOX_SUFFIX) box/virtualbox/%$(BOX_SUFFIX) box/parallels/%$(BOX_SUF
 	bin/box build $<
 
 # Ubuntu dev host version numbers
-VERSION_UBUNTU_HOST ?= 0.1.0
+VERSION_UBUNTU_HOST ?= 0.2.0
 VERSION_LONG_UBUNTU_HOST ?= v${VERSION_UBUNTU_HOST}
 
 .PHONY: all ansible-* build-* build-cs clean assure dconf-load deliver assure_atlas assure_atlas_vmware assure_atlas_virtualbox assure_atlas_parallels vagrant-*
@@ -38,7 +38,7 @@ all: build assure deliver
 build: $(BOX_FILES)
 
 build-%: ## build-(ubuntu1804-desktop|ubuntu1804|ubuntu1604-desktop|ubuntu1604|ubuntu1404-desktop|ubuntu1404) Build the specified box
-	packer build -only=vmware-iso -var-file=$*.json ubuntu.json
+	packer build -only=vmware-iso -var 'version=$(VAGRANT_BOX_VERSION)' -var-file=$*.json ubuntu.json
 
 build-cs: ## WARNING: THIS BUILDS A PUBLIC VAGRANT BOX PUBLISHED TO VAGRANT CLOUD. Build the credit stretcher ubuntu host VMWare VM
 	@if [[ -z "${BUILD_CONFIRMATION}" ]]; then \
@@ -168,10 +168,11 @@ ansible-provision: ## Runs ansible playbook used by packer that provisions gener
 	ansible-galaxy install -p provision/roles -r provision/requirements.yml; \
 	PYTHONUNBUFFERED=1 ANSIBLE_FORCE_COLOR=true ansible-playbook provision/playbook.yml --tags=$$TAGS --extra-vars "user=${USER}" --extra-vars "github_oauth_token=${GITHUB_OAUTH_TOKEN}"
 
-ansible-provision-vagrant: ## Runs ansible playbook used by vagrant to configure user specific details in generic VM.
+ansible-provision-private: ## Runs ansible playbook used by vagrant to configure user specific details in generic VM.
 	@read -r -p "Ansible tags to run (command separated list or 'all' to run everything): " TAGS; \
+	ansible-galaxy collection install -r provision/requirements.yml; \
 	ansible-galaxy install -p provision/roles -r provision/requirements.yml; \
-	PYTHONUNBUFFERED=1 ANSIBLE_FORCE_COLOR=true ansible-playbook provision/playbook-vagrant.yml --tags=$$TAGS --extra-vars "user=${USER}" --extra-vars "github_oauth_token=${GITHUB_OAUTH_TOKEN}"
+	PYTHONUNBUFFERED=1 ANSIBLE_FORCE_COLOR=true ansible-playbook provision/playbook-private.yml --tags=$$TAGS --extra-vars "user=${USER}" --extra-vars "github_oauth_token=${GITHUB_OAUTH_TOKEN}"
 
 ansible-provision-packer: ## Runs ansible playbook used by packer.
 	@read -r -p "Ansible tags to run (command separated list or 'all' to run everything): " TAGS; \
