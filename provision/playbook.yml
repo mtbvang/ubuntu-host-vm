@@ -66,6 +66,25 @@
     become: true
     become_user: root
     tags: packages
+  - name: Install cypress required system packages
+    apt:
+      name: "{{ packages }}"
+    vars:
+      packages:
+        - libgtk2.0-0
+        - libgtk-3-0
+        - libgbm-dev
+        - libnotify-dev
+        - libgconf-2-4
+        - libnss3
+        - libxss1
+        - libasound2
+        - libxtst6
+        - xauth
+        - xvfb
+    become: true
+    become_user: root
+    tags: packages,packagescypress
 
   environment:
     GITHUB_OAUTH_TOKEN: "{{ github_oauth_token }}"
@@ -77,6 +96,9 @@
     tags: slack
   - role: nodejs
     nodejs_version: "12.x"
+    nodejs_npm_global_packages:
+      - name: '@angular/cli'
+        verison: '10.2.0'
     become: true
     become_user: root
     tags: nodejs
@@ -150,7 +172,18 @@
     become_user: root
     tags: terragrunt
 
-  tasks:
+  tasks: # Install "foo" and "bar" snap
+  - name: Install snap packages
+    snap:
+      name:
+        - vlc
+    become: true
+    become_user: root
+    tags: snappackages
+  - name: Install "google-translate-xlf-updated" node.js package globally.
+    npm:
+      name: google-translate-xlf-updated
+      global: yes
   - name: Dconf - Enable Night Light
     dconf:
       key: "/org/gnome/settings-daemon/plugins/color/night-light-enabled"
