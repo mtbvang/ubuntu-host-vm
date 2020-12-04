@@ -134,7 +134,7 @@ vagrant-up-testing: ## vagrant up VM with $VAGRANT_VM_MEMORY GB ram (default=2) 
 	$(vagrantEnvVarsTesting) vagrant up --debug
 
 vagrant-up: ## vagrant up VM with $VAGRANT_VM_MEMORY GB ram (default=12) and $VAGRANT_VM_CPUS (default=4) cpus.
-	$(vagrantEnvVars) vagrant up
+	$(MAKE) make-empty-directories; $(vagrantEnvVars) vagrant up
 
 vagrant-reload: ## vagrant reload VM with $VAGRANT_VM_MEMORY GB ram (default=12) and $VAGRANT_VM_CPUS (default=4) cpus.
 	$(vagrantEnvVars) vagrant reload
@@ -200,3 +200,6 @@ update-version-ubuntu-host-vm: ## Update the version number for the specified su
 
 dconf-load: ## Load ubuntu settings from provision/files/saved_settings.dconf file
 	@dconf load / < provision/files/saved_settings.dconf
+
+make-empty-directories: ## Make empty directories that are required by Vagrantfile if they don't exist
+	@mkdir -p ~/.ssh ~/.aws ~/OpenVPN
