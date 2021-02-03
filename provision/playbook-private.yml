@@ -26,24 +26,35 @@
         owner: '{{ user }}'
         mode: '0644'
       tags: bashrc
+      
     - name: Create .aws directory if it does not exist
       file:
         path: /home/{{ user }}/.aws
         state: directory
         mode: '0755'
       tags: awsconfig
+
     - name: Add aws config file
       copy:
         src: files/aws-config
         dest: '/home/{{ user }}/.aws/config'
         mode: 0644
       tags: awsconfig
+
     - name: Create ~/code directory if it does not exist
       file:
         path: /home/{{ user }}/code
         state: directory
         mode: '0755'
       tags: codedir
+
+    - name: Create ~/.pgadmin directory for the pgAdmin web tool. It's an IDE for psql databases
+      file:
+        src: files/pgadmin4.db
+        dest: '/home/{{ user }}/.pgadmin'
+        owner: '{{ user }}'
+        mode: '0644'
+      tags: pgadmin
 
     - name: Set fs.inotify.max_user_watches to 524288 in /etc/sysctl.conf
       ansible.posix.sysctl:
