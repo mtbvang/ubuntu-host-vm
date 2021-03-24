@@ -111,7 +111,7 @@
         packer version
       register: output
       failed_when:
-      - '"1.4.2" not in output.stdout'
+      - '"1.6.5" not in output.stdout'
       ignore_errors: ignore_errors
       tags: test,packer,packertest
 
@@ -203,3 +203,19 @@
         - '"/usr/bin/slack" not in output.stdout'
       ignore_errors: ignore_errors
       tags: test,slack,slacktest
+    - name: Test GraphicsMagick installed
+      shell: >
+        gm version
+      register: output
+      failed_when:
+        - '"GraphicsMagick 1.3.26" not in output.stdout'
+      ignore_errors: ignore_errors
+      tags: test,graphicsmagick,graphicsmagicktest
+    - name: Test ImagesMagick installed
+      shell: >
+        magick -version
+      register: output
+      failed_when:
+        - '"ImageMagick 7.0.11-3" not in output.stdout'
+      ignore_errors: ignore_errors
+      tags: test,graphicsmagick,graphicsmagicktest

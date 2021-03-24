@@ -47,53 +47,18 @@
       ]
     },
     {
-      "type": "file",
-      "source": "provision/requirements.yml",
-      "destination": "/tmp/requirements.yml"
+      "type": "ansible",
+      "playbook_file": "./provision/playbook.yml",
+      "extra_arguments": [ "--extra-vars", "github_oauth_token={{user `github_oauth_token`}}" ],
+      "galaxy_file": "./provision/requirements.yml",
+      "max_retries" : 2
     },
     {
-      "type": "file",
-      "source": "provision/playbook-packer.yml",
-      "destination": "/tmp/playbook-packer.yml"
-    },
-    {
-      "type": "file",
-      "source": "provision/playbook.yml",
-      "destination": "/tmp/playbook.yml"
-    },
-    {
-      "type": "file",
-      "source": "provision/tests.yml",
-      "destination": "/tmp/tests.yml"
-    },
-    {
-      "type": "file",
-      "source": "provision/tests-packer.yml",
-      "destination": "/tmp/tests-packer.yml"
-    },
-    {
-      "type": "file",
-      "source": "provision/templates",
-      "destination": "/tmp/templates"
-    },
-    {
-      "type": "file",
-      "source": "provision/files",
-      "destination": "/tmp/files"
-    },
-    {
-      "type": "shell",
-      "inline": [
-        "sudo ansible-galaxy install -r /tmp/requirements.yml",
-        "sudo ansible-playbook /tmp/playbook.yml --extra-vars --extra-vars \"github_oauth_token=${GITHUB_OAUTH_TOKEN}\"",
-        "sudo ansible-playbook /tmp/playbook-packer.yml",
-        "sudo ansible-playbook /tmp/tests.yml --extra-vars \"github_oauth_token=${GITHUB_OAUTH_TOKEN}\"",
-        "sudo ansible-playbook /tmp/tests-packer.yml",
-        "sudo chmod -R 0777 /home/vagrant/.ansible"
-      ],
-      "environment_vars": [
-        "GITHUB_OAUTH_TOKEN={{user `github_oauth_token`}}"
-      ]
+      "type": "ansible",
+      "playbook_file": "./provision/playbook-packer.yml",
+      "extra_arguments": [ "--extra-vars", "github_oauth_token={{user `github_oauth_token`}}" ],
+      "galaxy_file": "./provision/requirements.yml",
+      "max_retries" : 2
     }
   ]
 }

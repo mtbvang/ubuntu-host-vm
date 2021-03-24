@@ -24,7 +24,7 @@ box/vmware/%$(BOX_SUFFIX) box/virtualbox/%$(BOX_SUFFIX) box/parallels/%$(BOX_SUF
 	bin/box build $<
 
 # Ubuntu dev host version numbers
-VERSION_UBUNTU_HOST ?= 0.4.0
+VERSION_UBUNTU_HOST ?= 0.4.1
 VERSION_LONG_UBUNTU_HOST ?= v${VERSION_UBUNTU_HOST}
 
 .PHONY: all ansible-* build-* build-cs clean assure dconf-load deliver assure_atlas assure_atlas_vmware assure_atlas_virtualbox assure_atlas_parallels vagrant-*
@@ -38,13 +38,15 @@ all: build assure deliver
 build: $(BOX_FILES)
 
 build-%: ## build-(ubuntu1804-desktop|ubuntu1804|ubuntu1604-desktop|ubuntu1604|ubuntu1404-desktop|ubuntu1404) Build the specified box
+	@sudo vmware-modconfig --console --install-all; \
 	packer build -only=vmware-iso -var 'version=$(VAGRANT_BOX_VERSION)' -var-file=$*.json ubuntu.json
 
-build-cs: ## WARNING: THIS BUILDS A PUBLIC VAGRANT BOX PUBLISHED TO VAGRANT CLOUD. Build the credit stretcher ubuntu host VMWare VM
+build-cs: build-ubuntu1804-desktop ## WARNING: THIS BUILDS A PUBLIC VAGRANT BOX PUBLISHED TO VAGRANT CLOUD. Build the credit stretcher ubuntu host VMWare VM
 	@if [[ -z "${BUILD_CONFIRMATION}" ]]; then \
 		read -r -p "WARNING: THIS BUILDS A PUBLIC VAGRANT BOX PUBLISHED TO VAGRANT CLOUD. Make sure it contains no sensitive information. Do you want to continue (yes|no): " BUILD_CONFIRMATION; \
 	fi; \
 	if [[ "$$BUILD_CONFIRMATION" = "yes" ]]; then \
+	  	sudo vmware-modconfig --console --install-all; \
 		packer build -var 'version=$(VAGRANT_BOX_VERSION)' -var 'github_oauth_token=853aa89f6459923fad9728f2b95320e2a042273f' -on-error=ask ubuntu-cs.json; \
 	fi;
 
