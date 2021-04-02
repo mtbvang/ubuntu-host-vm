@@ -391,17 +391,18 @@
 
   - name: Install GraphicsMagick
     shell: >
-      cd /tmp &&
-      tar xzvf GraphicsMagick-1.3.26.tar.gz &&
-      cd GraphicsMagick-1.3.26 &&
-      ./configure &&
-      make &&
+      cd /tmp;
+      tar xzvf GraphicsMagick-1.3.26.tar.gz;
+      cd GraphicsMagick-1.3.26;
+      ./configure;
+      make;
       make install
     args:
       creates: /usr/local/bin/gm
     become: true
     become_user: root
     tags: graphicsmagick
+va
 
   - name: download Imagemagick
     get_url:
@@ -412,12 +413,12 @@
 
   - name: Install ImageMagick
     shell: >
-      cd /tmp &&
-      tar xvzf ImageMagick.tar.gz &&
-      cd ImageMagick-* &&
-      ./configure &&
-      make && 
-      make install && 
+      cd /tmp;
+      tar xvzf ImageMagick.tar.gz;
+      cd ImageMagick-7.0.11-3;
+      ./configure;
+      make;
+      make install;
       ldconfig /usr/local/lib
     args:
       creates: /usr/local/bin/magick

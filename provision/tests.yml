@@ -208,7 +208,7 @@
         gm version
       register: output
       failed_when:
-        - '"GraphicsMagick 1.3" not in output.stdout'
+        - '"GraphicsMagick 1.3.26" not in output.stdout'
       ignore_errors: ignore_errors
       tags: test,graphicsmagick,graphicsmagicktest
     - name: Test ImagesMagick installed
@@ -216,6 +216,6 @@
         magick -version
       register: output
       failed_when:
-        - '"ImageMagick 7.0" not in output.stdout'
+        - '"ImageMagick 7.0.11-3" not in output.stdout'
       ignore_errors: ignore_errors
       tags: test,graphicsmagick,graphicsmagicktest
