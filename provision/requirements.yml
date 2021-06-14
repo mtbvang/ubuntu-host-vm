@@ -38,5 +38,10 @@ roles:
   - src: https://github.com/creditstretcher/ansible-role-vmware-workstation
     name: vmware-workstation
     version: '0.1.0'
-  - src: https://github.com/avnes/ansible-role-slack
+  - src: https://github.com/Oefenweb/ansible-slack
     name: slack
+
+collections:
+  - name: ansible.posix
+    version: '1.1.1'
+    type: 'galaxy'

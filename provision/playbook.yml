@@ -24,12 +24,12 @@
     _vmware_workstation_version: '15.5.6'
     _docker_version: '5:19.03.12~3-0~ubuntu-bionic'
     _postgresql_client_version: '11'
+    _slack_version: '4.12.2'
 
   pre_tasks:
     - name: Gathering facts
       setup:
     - name: Install required system packages
-      update_cache: yes
       apt:
         name: "{{ packages }}"
       vars:
@@ -92,14 +92,15 @@
 
   roles:
     - role: slack
+      slack_version: "{{ _slack_version }}"
       become: true
       become_user: root
       tags: slack
     - role: nodejs
       nodejs_version: "12.x"
       nodejs_npm_global_packages:
-        - name: "@angular/cli"
-          verison: "10.2.0"
+        - name: '@angular/cli'
+          verison: '10.2.0'
       become: true
       become_user: root
       tags: nodejs
@@ -108,6 +109,7 @@
       become_user: root
       tags: zoom
     - role: docker
+      docker_edition: "ce"
       docker_package: "docker-{{ docker_edition }}={{ _docker_version }}"
       docker_users:
         - "{{ user }}"
@@ -118,12 +120,12 @@
       become_user: root
       tags: docker
     - role: awscli
-      awscli_version: "{{ _awscli_version }}"
+      awscli_version: '{{ _awscli_version }}'
       become: true
       become_user: root
       tags: awscli
     - role: packer
-      packer_version: "{{ _packer_version }}"
+      packer_version: '{{ _packer_version }}'
       become: true
       become_user: root
       tags: packer
@@ -133,10 +135,10 @@
       tags: chrome
     - role: intellij
       intellij_edition: ultimate
-      intellij_version: "2020.2.1"
+      intellij_version: '2020.2.1'
       intellij_download_dir: "{{ x_ansible_download_dir | default(ansible_env.HOME + '~/.ansible/tmp/downloads') }}"
       users:
-        - username: "{{ user }}"
+        - username: '{{ user }}'
           intellij_plugins:
             - zielu.gittoolbox
             - org.intellij.plugins.hcl
@@ -157,23 +159,24 @@
       become_user: root
       tags: vagrant
     - role: virtualbox
-      virtualbox_state: "present"
-      virtualbox_apt_repo: "deb [arch=amd64] https://download.virtualbox.org/virtualbox/debian bionic contrib"
+      virtualbox_state: 'present'
+      virtualbox_apt_repo: 'deb [arch=amd64] https://download.virtualbox.org/virtualbox/debian bionic contrib'
       become: true
       become_user: root
       tags: virtualbox
     - role: terraform
-      version: "{{ _terraform_version }}"
+      version: '{{ _terraform_version }}'
       become: true
       become_user: root
       tags: terraform
     - role: terragrunt
-      terragrunt_install_version: "{{ _terragrunt_version }}"
+      terragrunt_install_version: '{{ _terragrunt_version }}'
       become: true
       become_user: root
       tags: terragrunt
 
-  tasks: # Install "foo" and "bar" snap
+  # Simple tasks that we haven't converted into roles yet
+  tasks:
     - name: Install snap packages
       snap:
         name:
@@ -181,11 +184,6 @@
       become: true
       become_user: root
       tags: snappackages
-    - name: Install "google-translate-xlf-updated" node.js package globally.
-      become: true
-      npm:
-        name: google-translate-xlf-updated
-        global: yes
     - name: Dconf - Enable Night Light
       dconf:
         key: "/org/gnome/settings-daemon/plugins/color/night-light-enabled"
@@ -227,38 +225,38 @@
       lineinfile:
         dest: /etc/sudoers
         state: present
-        regexp: "^%wheel"
-        line: "%wheel ALL=(ALL) NOPASSWD: ALL"
-        validate: "visudo -cf %s"
+        regexp: '^%wheel'
+        line: '%wheel ALL=(ALL) NOPASSWD: ALL'
+        validate: 'visudo -cf %s'
       become: true
       become_user: root
       tags: docker
     - name: Add the user {{ user }} to docker and wheel group to allow passwordless sudo
       user:
-        name: "{{ user }}"
+        name: '{{ user }}'
         groups: docker,wheel
       become: true
       become_user: root
       tags: docker
     - name: Delete the following JSON key/value from ~/.docker/config.json. Fix for issue https://github.com/docker/docker-credential-helpers/issues/149
       lineinfile:
-        path: "/home/{{ user }}/.docker/config.json"
+        path: '/home/{{ user }}/.docker/config.json'
         state: absent
-        regexp: "credsStore"
+        regexp: 'credsStore'
       tags: docker
     - name: Make sure mac os ssh use keychain config not present
       lineinfile:
-        path: "/home/{{ user }}/.ssh/config"
+        path: '/home/{{ user }}/.ssh/config'
         state: absent
-        regexp: "^UseKeychain"
+        regexp: '^UseKeychain'
     - name: Add aliases
       copy:
-        src: files/bash_aliases
+        src:  files/bash_aliases
         dest: ~/.bash_aliases
         mode: 0644
       tags: aliases
     - name: Install Gruntwork installer
-      shell: "{{ item }}"
+      shell: '{{ item }}'
       with_items:
         - curl -LsS https://raw.githubusercontent.com/gruntwork-io/gruntwork-installer/master/bootstrap-gruntwork-installer.sh | bash /dev/stdin --version v0.0.24
       args:
@@ -275,10 +273,9 @@
       args:
         creates: /usr/local/bin/build-docker-image
       tags: gruntworksmoduleci
-    # FIXME rewrite this to pick up file permission changes.
     - name: Install openvpn-admin. Requires gruntwork-install
       shell: >
-        gruntwork-install --binary-name openvpn-admin --repo https://github.com/gruntwork-io/package-openvpn --tag {{ _openvpn_admin }};
+        gruntwork-install --binary-name openvpn-admin --repo https://github.com/gruntwork-io/package-openvpn --tag {{ _openvpn_admin }} &&
         chmod 0755 /usr/local/bin/openvpn-admin
       become: true
       become_user: root
@@ -294,7 +291,7 @@
       tags: awsauth
     - name: Install gruntkms. Requires gruntwork-install
       shell: >
-        /usr/local/bin/gruntwork-install --binary-name 'gruntkms' --repo https://github.com/gruntwork-io/gruntkms --tag {{ _grunt_kms_version }};
+        /usr/local/bin/gruntwork-install --binary-name 'gruntkms' --repo https://github.com/gruntwork-io/gruntkms --tag {{ _grunt_kms_version }} &&
         chmod 0755 /usr/local/bin/gruntkms
       args:
         creates: /usr/local/bin/gruntkms
@@ -353,11 +350,11 @@
       tags: postgresql
     - name: Install postgres client
       shell: >
-        apt purge -y postgresql*;
-        apt-get remove -y postgresql-client-common;
-        wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | apt-key add - ;
-        sh -c 'echo "deb http://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg main" > /etc/apt/sources.list.d/pgdg.list';
-        apt-get update -qq > /dev/null;
+        apt purge -y postgresql* &&
+        apt-get remove -y postgresql-client-common &&
+        wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | apt-key add - &&
+        sh -c 'echo "deb http://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg main" > /etc/apt/sources.list.d/pgdg.list' &&
+        apt-get update -qq > /dev/null &&
         apt-get -y install postgresql-client-{{ _postgresql_client_version }}
       when: pg_dump_version.stdout.find(_postgresql_client_version) == -1
       become: true
@@ -376,9 +373,76 @@
 
     - name: Install keybase
       shell: >
-        cd /tmp;
-        curl --remote-name https://prerelease.keybase.io/keybase_amd64.deb;
-        apt install -y ./keybase_amd64.deb
+        cd /tmp &&
+        curl --remote-name https://prerelease.keybase.io/keybase_amd64.deb &&
+        sudo apt install -y ./keybase_amd64.deb
+      args:
+        chdir: /usr/bin/
+        creates: keybase
       become: true
       become_user: root
       tags: keybase
+
+    # FIXME https://github.com/ansible/ansible/issues/64016 the get_url module always downloads the file.
+    - name: download GraphicsMagick
+      get_url:
+        url: ftp://ftp.graphicsmagick.org/pub/GraphicsMagick/1.3/GraphicsMagick-1.3.26.tar.gz
+        dest: /tmp/GraphicsMagick-1.3.26.tar.gz
+        mode: 0777
+        force: no
+      tags: graphicsmagick
+
+    - name: Install GraphicsMagick
+      shell: >
+        cd /tmp &&
+        tar xzvf GraphicsMagick-1.3.26.tar.gz &&
+        cd GraphicsMagick-1.3.26 &&
+        ./configure &&
+        make &&
+        make install
+      args:
+        creates: /usr/local/bin/gm
+      become: true
+      become_user: root
+      tags: graphicsmagick
+
+    # FIXME https://github.com/ansible/ansible/issues/64016 the get_url module always downloads the file.
+    - name: download Imagemagick
+      get_url:
+        url: https://www.imagemagick.org/download/ImageMagick.tar.gz
+        dest: /tmp/ImageMagick.tar.gz
+        mode: 0777
+      tags: imagemagick
+
+    - name: Install ImageMagick
+      shell: >
+        cd /tmp &&
+        tar xvzf ImageMagick.tar.gz &&
+        cd ImageMagick-7.0.11-* &&
+        ./configure &&
+        make &&
+        make install &&
+        ldconfig /usr/local/lib
+      args:
+        creates: /usr/local/bin/magick
+      become: true
+      become_user: root
+      tags: imagemagick
+
+    - name: download BabelEdit
+      get_url:
+        url: https://www.codeandweb.com/download/babeledit/2.8.0/BabelEdit-2.8.0.deb
+        dest: /tmp/BabelEdit-2.8.0.deb
+        mode: 0777
+      tags: babeledit
+
+    - name: Install BabelEdit
+      shell: >
+        cd /tmp &&
+        dpkg -i /tmp/BabelEdit-2.8.0.deb
+      args:
+        creates: /usr/bin/BabelEdit
+      become: true
+      become_user: root
+      tags: babeledit
+

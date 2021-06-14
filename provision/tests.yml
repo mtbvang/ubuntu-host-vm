@@ -97,44 +97,15 @@
       ignore_errors: ignore_errors
       tags: test,gruntwork,gruntworktest,gruntworkcli,gruntworkclitest
 
-#    - name: Test ssh config
-#      shell: >
-#        ssh -tt bastion
-#      register: output
-#      failed_when:
-#      - '"Permission denied" not in output.stderr'
-#      ignore_errors: ignore_errors
-#      tags: test,sshconfig,testsshconfig
-
     - name: Test packer
       shell: >
-        packer version
+        packer --version
       register: output
       failed_when:
       - '"1.6.5" not in output.stdout'
       ignore_errors: ignore_errors
       tags: test,packer,packertest
 
-#    - name: Test cloud nuke
-#      shell: >
-#        cloud-nuke -v
-#      register: output
-#      failed_when:
-#        - '"v0.1.4" not in output.stdout'
-#      ignore_errors: ignore_errors
-#      tags: test,cloudnuke,cloudnuketest
-#
-#    - name: Test cloud-nuke cn alias
-#      lineinfile:
-#        path: '/home/{{ user }}/.bash_aliases'
-#        line: "alias cn='cloud-nuke'"
-#        state: present
-#      check_mode: no
-#      register: output
-#      failed_when: (output | changed) or (output | failed)
-#      ignore_errors: ignore_errors
-#      tags: test,cloudnuke,cloudnuketest
-#
     - name: Test terragrunt
       shell: >
         terragrunt -v
@@ -160,7 +131,7 @@
         terraform-update-variable --help
       register: output
       failed_when:
-      - '"terraform-update-variable [OPTIONS]" not in output.stdout'
+      - '"terraform-update-variable [OPTIONS]" not in output.stdout and "terraform-update-variable [OPTIONS]" not in output.stderr'
       ignore_errors: ignore_errors
       tags: test,gruntworkshelpers,gruntworkshelperstest,terraformupdatevarialbe,terraformupdatevarialbetest
     - name: Test gruntworks build-helpers

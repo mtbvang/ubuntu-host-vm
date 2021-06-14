@@ -24,7 +24,7 @@ box/vmware/%$(BOX_SUFFIX) box/virtualbox/%$(BOX_SUFFIX) box/parallels/%$(BOX_SUF
 	bin/box build $<
 
 # Ubuntu dev host version numbers
-VERSION_UBUNTU_HOST ?= 0.5.0
+VERSION_UBUNTU_HOST ?= 0.5.1
 VERSION_LONG_UBUNTU_HOST ?= v${VERSION_UBUNTU_HOST}
 
 .PHONY: all ansible-* build-* build-cs clean assure dconf-load deliver assure_atlas assure_atlas_vmware assure_atlas_virtualbox assure_atlas_parallels vagrant-*
@@ -183,7 +183,7 @@ ansible-provision-packer: ## Runs ansible playbook used by packer.
 
 ansible-tests: ## runs ansible tests.yml playbook from guest
 	@ansible-galaxy install -p provision/roles -r provision/requirements.yml; \
-	PYTHONUNBUFFERED=1 ANSIBLE_FORCE_COLOR=true ansible-playbook -vv --tags=all provision/tests.yml; \
+	PYTHONUNBUFFERED=1 ANSIBLE_FORCE_COLOR=true ansible-playbook -vv --tags=all provision/tests.yml && \
 	PYTHONUNBUFFERED=1 ANSIBLE_FORCE_COLOR=true ansible-playbook -vv --tags=all provision/tests-vagrant.yml;
 
 clean-bak-files: ## Remove all .bak files create by sed -i.bak option

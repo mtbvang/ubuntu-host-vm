@@ -2,7 +2,9 @@
 
 ### Overview
 
-This repository contains [Packer](https://packer.io/) templates for creating Ubuntu Vagrant boxes.
+This repository contains 
+1. [Packer](https://packer.io/) templates for creating Ubuntu Vagrant boxes and the .
+1. The Vagrantfile and Ansible provisioning scripts to provision and configure the Fellow Pay development Virtual Machine.
 
 It is a private copy of the https://github.com/boxcutter/ubuntu repo. We use this to build the vagrant box published to
 vagrant cloud.
@@ -20,6 +22,26 @@ To run the `make vagrant-up` command the following is required on your host mach
 1. ~/.ssh folder containing the SSH key added to your AWS IAM user to give you access to the AWS environments.
 1. GITHUB_OAUTH_TOKEN environment variable containing a token generated in your github account with access to the gruntwork repos.   
 
+
+## Updating and Testing the Ansible provisioning scripts
+
+It is intended the development VM is ephemeral and any persistent changes are to be written as Infrastructure as Code in
+the Ansible playbooks found in the provision directory used by the Vagrantfile.
+
+The process for updating and testing the Ansible scripts are:
+
+1. Update Ansible playbooks in the git subtree ubuntu-host-vm repo in the cs-fullstack repo.
+1. Test the changes by running `make ansible-provision` target from the makefile in this directory during development 
+inside the VM. The ansible scripts need to be idempotent and this is the way that developers will get your changes into 
+their VM.
+1. If you have enough RAM on your host test the creation of a new VM:
+    1. From your cs-fullstack feature branch `make git-subtree-push-ubuntu-host-vm`.
+    1. On your windows host `git clone git@github.com:creditstretcher/ubuntu-host-vm.git ubuntu-host-vm-testing` into your code directory.
+    1. `cd ubuntu-host-vm-testng`
+    1. `git checkout <YOUR BRANCH NAME>`
+    1. `VAGRANT_VM_MEMORY=2024 VAGRANT_VM_CPUS=1 VERSI ON_UBUNTU_HOST=0.1.0 make vagrant-up`. Note, replace VERSION_UBUNTU_HOST=0.1.0 with the latest  https://vagrantcloud.com/creditstretcher/ubuntu18.04-desktop vagrant box
+    1. When your testing is finished delete your feature branch from the origin ubuntu-host-vm repo. Do this manually from [https://github.com/creditstretcher/ubuntu-host-vm/branches](https://github.com/creditstretcher/ubuntu-host-vm/branches) 
+ 
 ## Building the Vagrant boxes with Packer
 
 To build the CreditStretcher box you will need [VMware Fusion](https://www.vmware.com/products/fusion)/[VMware Workstation](https://www.vmware.com/products/workstation)
