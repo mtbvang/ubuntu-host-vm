@@ -24,7 +24,7 @@ box/vmware/%$(BOX_SUFFIX) box/virtualbox/%$(BOX_SUFFIX) box/parallels/%$(BOX_SUF
 	bin/box build $<
 
 # Ubuntu dev host version numbers
-VERSION_UBUNTU_HOST ?= 0.5.1
+VERSION_UBUNTU_HOST ?= 0.5.2
 VERSION_LONG_UBUNTU_HOST ?= v${VERSION_UBUNTU_HOST}
 
 .PHONY: all ansible-* build-* build-cs clean assure dconf-load deliver assure_atlas assure_atlas_vmware assure_atlas_virtualbox assure_atlas_parallels vagrant-*
@@ -132,23 +132,27 @@ vagrant-cloud-publish:  ## Publish the packer built vagrant box to vagrant cloud
 		vagrant cloud publish creditstretcher/ubuntu18.04-desktop $(VAGRANT_BOX_VERSION) vmware_desktop box/vmware/cs-ubuntu1804-desktop-$(VAGRANT_BOX_VERSION).box -d "A VMWare Ubuntu desktop host VM with development tools installed." --version-description "version $(VAGRANT_BOX_VERSION)" --release --short-description "Download me!"; \
 	fi;
 
-vagrant-up-testing: ## vagrant up VM with $VAGRANT_VM_MEMORY GB ram (default=2) and $VAGRANT_VM_CPUS (default=1) cpus for testing purposes.
+vagrant-up-testing: ## vagrant up VM with $VAGRANT_VM_MEMORY MB ram (default=2048) and $VAGRANT_VM_CPUS (default=1) cpus for testing purposes. You can set the following environment variables in the command line to set the VM ram and cpu respectively: VAGRANT_VM_MEMORY=xxx and  VAGRANT_VM_CPUS=x.
 	$(vagrantEnvVarsTesting) vagrant up --debug
 
-vagrant-up: ## vagrant up VM with $VAGRANT_VM_MEMORY GB ram (default=12) and $VAGRANT_VM_CPUS (default=4) cpus.
+vagrant-up: ## vagrant up VM with $VAGRANT_VM_MEMORY MB ram (default=12288) and $VAGRANT_VM_CPUS (default=4) cpus. You can set the following environment variables in the command line to set the VM ram and cpu respectively: VAGRANT_VM_MEMORY=xxx and  VAGRANT_VM_CPUS=x.
 	$(MAKE) make-empty-directories; $(vagrantEnvVars) vagrant up
 
-vagrant-reload: ## vagrant reload VM with $VAGRANT_VM_MEMORY GB ram (default=12) and $VAGRANT_VM_CPUS (default=4) cpus.
+vagrant-reload: ## vagrant reload VM with $VAGRANT_VM_MEMORY MB ram (default=12288) and $VAGRANT_VM_CPUS (default=4) cpus. You can set the following environment variables in the command line to set the VM ram and cpu respectively: VAGRANT_VM_MEMORY=xxx and  VAGRANT_VM_CPUS=x.
 	$(vagrantEnvVars) vagrant reload
 
 vagrant-destroy: ## vagrant destroy VM.
 	$(vagrantEnvVars) vagrant destroy -f
 
-vagrant-recreate: ## vagrant destroy and up a VM with $VAGRANT_VM_MEMORY GB ram (default=12) and $VAGRANT_VM_CPUS (default=4) cpus.
+vagrant-recreate: ## vagrant destroy and up a VM with $VAGRANT_VM_MEMORY MB ram (default=12288) and $VAGRANT_VM_CPUS (default=4) cpus. You can set the following environment variables in the command line to set the VM ram and cpu respectively: VAGRANT_VM_MEMORY=xxx and  VAGRANT_VM_CPUS=x.
 	vagrant destroy host -f; \
 	$(vagrantEnvVars) vagrant up
 
-vagrant-provision: ## vagrant provision VM
+vagrant-recreate-no-provision: ## vagrant destroy and up a VM with $VAGRANT_VM_MEMORY MB ram (default=12288) and $VAGRANT_VM_CPUS (default=4) cpus. You can set the following environment variables in the command line to set the VM ram and cpu respectively: VAGRANT_VM_MEMORY=xxx and  VAGRANT_VM_CPUS=x.
+	vagrant destroy host -f; \
+	$(vagrantEnvVars) vagrant up --no-provision
+	
+vagrant-provision: ## vagrant provision VM with all the provisioners.
 	$(vagrantEnvVars) vagrant provision
 
 vagrant-provision-private: ## vagrant provision VM with private playbook and test.

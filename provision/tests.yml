@@ -84,7 +84,7 @@
         aws --version
       register: output
       failed_when:
-      - '"aws-cli/1.18.140" not in output.stderr'
+      - '"aws-cli/1.18" not in output.stderr'
       ignore_errors: ignore_errors
       tags: test,awscli,awsclitest
 
@@ -187,6 +187,6 @@
         magick -version
       register: output
       failed_when:
-        - '"ImageMagick 7.0.11" not in output.stdout'
+        - '"ImageMagick 7.1." not in output.stdout'
       ignore_errors: ignore_errors
       tags: test,graphicsmagick,graphicsmagicktest
