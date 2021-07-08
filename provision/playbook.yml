@@ -122,10 +122,6 @@
       become: true
       become_user: root
       tags: nodejs
-    - role: zoom
-      become: true
-      become_user: root
-      tags: zoom
     - role: docker
       docker_edition: "ce"
       docker_package: "docker-{{ docker_edition }}={{ _docker_version }}"
@@ -466,4 +462,17 @@
         state: directory
         mode: '0755'
       tags: pgadmin
+
+    # TODO update vagrant role with this
+    - name: Install vagrant utility
+      become: true
+      become_user: root
+      shell: >
+        cd /tmp
+        && wget -q https://releases.hashicorp.com/vagrant-vmware-utility/1.0.20/vagrant-vmware-utility_1.0.20_linux_amd64.zip
+        && sudo mkdir -p /opt/vagrant-vmware-desktop/bin
+        && sudo unzip -d /opt/vagrant-vmware-desktop/bin vagrant-vmware-utility_1.0.20_linux_amd64.zip
+        && sudo /opt/vagrant-vmware-desktop/bin/vagrant-vmware-utility certificate generate
+        && sudo /opt/vagrant-vmware-desktop/bin/vagrant-vmware-utility service install
+      tags: vagrant,vagrantutility
 

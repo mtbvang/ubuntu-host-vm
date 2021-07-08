@@ -99,7 +99,7 @@ Vagrant.configure("2") do |config|
                       :inline => "sudo rm /etc/localtime && sudo ln -s /usr/share/zoneinfo/#{VM_TIMEZONE} /etc/localtime", run: "always"
 
   config.vm.provision "shell",
-                      inline: "sudo chmod -R 0777 /home/vagrant/.ansible"
+                      inline: "sudo chmod -R 0777 /home/vagrant/.ansible || true"
 
   ## Provision the guest VM using the public/packer ansible playbook with the local provisioner.
   config.vm.provision "ansible", type: :ansible_local do |ansible|

@@ -4,8 +4,7 @@
   become: yes
   become_user: "{{ user }}"
   hosts:
-    - "{{ hosts }}"
-    - all
+    - localhost
   vars:
     user: 'vagrant'
     hosts: 'localhost'

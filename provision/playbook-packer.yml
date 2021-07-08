@@ -6,7 +6,6 @@
   become_user: "{{ user }}"
   hosts:
     - localhost
-    - all
   vars:
     user: 'vagrant'
     _vmware_workstation_version: '15.5.6'
