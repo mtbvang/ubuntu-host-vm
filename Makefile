@@ -24,7 +24,7 @@ box/vmware/%$(BOX_SUFFIX) box/virtualbox/%$(BOX_SUFFIX) box/parallels/%$(BOX_SUF
 	bin/box build $<
 
 # Ubuntu dev host version numbers
-VERSION_UBUNTU_HOST ?= 0.5.3
+VERSION_UBUNTU_HOST ?= 0.5.4
 VERSION_LONG_UBUNTU_HOST ?= v${VERSION_UBUNTU_HOST}
 
 .PHONY: all ansible-* build-* build-cs clean assure dconf-load deliver assure_atlas assure_atlas_vmware assure_atlas_virtualbox assure_atlas_parallels vagrant-*
