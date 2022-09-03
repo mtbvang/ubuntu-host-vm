@@ -187,6 +187,6 @@
         magick -version
       register: output
       failed_when:
-        - '"ImageMagick 7.1.0" not in output.stdout'
+        - '"ImageMagick 7.1." not in output.stdout'
       ignore_errors: ignore_errors
       tags: test,graphicsmagick,graphicsmagicktest

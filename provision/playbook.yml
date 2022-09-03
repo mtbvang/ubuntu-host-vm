@@ -32,6 +32,7 @@
     - name: Install required system packages
       apt:
         name: "{{ packages }}"
+        update_cache: yes
       vars:
         packages:
           - jq
@@ -70,6 +71,7 @@
     - name: Install cypress required system packages
       apt:
         name: "{{ packages }}"
+        update_cache: yes
       vars:
         packages:
           - libgtk2.0-0
@@ -86,6 +88,22 @@
       become: true
       become_user: root
       tags: packages,packagescypress
+
+    - name: Check packer version
+      shell: >
+        packer --version
+      register: current_packer_version
+      ignore_errors: true
+      tags: packer
+
+    - name: Remove existing packer binary if versions don't match
+      file:
+        path: /usr/local/bin/packer
+        state: absent
+      when: current_packer_version.stdout.find(_packer_version) == -1
+      become: true
+      become_user: root
+      tags: packer
 
   environment:
     GITHUB_OAUTH_TOKEN: "{{ github_oauth_token }}"
@@ -104,10 +122,6 @@
       become: true
       become_user: root
       tags: nodejs
-    - role: zoom
-      become: true
-      become_user: root
-      tags: zoom
     - role: docker
       docker_edition: "ce"
       docker_package: "docker-{{ docker_edition }}={{ _docker_version }}"
@@ -383,18 +397,10 @@
       become_user: root
       tags: keybase
 
-    # FIXME https://github.com/ansible/ansible/issues/64016 the get_url module always downloads the file.
-    - name: download GraphicsMagick
-      get_url:
-        url: ftp://ftp.graphicsmagick.org/pub/GraphicsMagick/1.3/GraphicsMagick-1.3.26.tar.gz
-        dest: /tmp/GraphicsMagick-1.3.26.tar.gz
-        mode: 0777
-        force: no
-      tags: graphicsmagick
-
     - name: Install GraphicsMagick
       shell: >
         cd /tmp &&
+        wget ftp://ftp.graphicsmagick.org/pub/GraphicsMagick/1.3/GraphicsMagick-1.3.26.tar.gz &&
         tar xzvf GraphicsMagick-1.3.26.tar.gz &&
         cd GraphicsMagick-1.3.26 &&
         ./configure &&
@@ -406,19 +412,12 @@
       become_user: root
       tags: graphicsmagick
 
-    # FIXME https://github.com/ansible/ansible/issues/64016 the get_url module always downloads the file.
-    - name: download Imagemagick
-      get_url:
-        url: https://www.imagemagick.org/download/ImageMagick.tar.gz
-        dest: /tmp/ImageMagick.tar.gz
-        mode: 0777
-      tags: imagemagick
-
     - name: Install ImageMagick
       shell: >
         cd /tmp &&
+        wget -q https://www.imagemagick.org/download/ImageMagick.tar.gz &&
         tar xvzf ImageMagick.tar.gz &&
-        cd ImageMagick-7.0.11-* &&
+        cd ImageMagick-7.1* &&
         ./configure &&
         make &&
         make install &&
@@ -429,20 +428,51 @@
       become_user: root
       tags: imagemagick
 
-    - name: download BabelEdit
-      get_url:
-        url: https://www.codeandweb.com/download/babeledit/2.8.0/BabelEdit-2.8.0.deb
-        dest: /tmp/BabelEdit-2.8.0.deb
-        mode: 0777
-      tags: babeledit
-
     - name: Install BabelEdit
       shell: >
         cd /tmp &&
+        wget -q https://www.codeandweb.com/download/babeledit/2.8.0/BabelEdit-2.8.0.deb &&
         dpkg -i /tmp/BabelEdit-2.8.0.deb
       args:
         creates: /usr/bin/BabelEdit
       become: true
       become_user: root
       tags: babeledit
+
+    - name: Create ~/code directory if it does not exist
+      file:
+        path: /home/{{ user }}/code
+        state: directory
+        mode: '0755'
+      tags: codedir
+
+    - name: Install pgadmin4 repository source
+      become: true
+      become_user: root
+      shell: >
+        curl https://www.pgadmin.org/static/packages_pgadmin_org.pub | sudo apt-key add &&
+        echo "deb https://ftp.postgresql.org/pub/pgadmin/pgadmin4/apt/$(lsb_release -cs) pgadmin4 main" > /etc/apt/sources.list.d/pgadmin4.list
+        && apt update
+        && apt-get install -y pgadmin4-web
+      tags: pgadmin
+
+    - name: Create ~/.pgadmin directory for the pgAdmin web tool. It's an IDE for psql databases
+      file:
+        path: '/home/{{ user }}/.pgadmin'
+        state: directory
+        mode: '0755'
+      tags: pgadmin
+
+    # TODO update vagrant role with this
+    - name: Install vagrant utility
+      become: true
+      become_user: root
+      shell: >
+        cd /tmp
+        && wget -q https://releases.hashicorp.com/vagrant-vmware-utility/1.0.20/vagrant-vmware-utility_1.0.20_linux_amd64.zip
+        && sudo mkdir -p /opt/vagrant-vmware-desktop/bin
+        && sudo unzip -d /opt/vagrant-vmware-desktop/bin vagrant-vmware-utility_1.0.20_linux_amd64.zip
+        && sudo /opt/vagrant-vmware-desktop/bin/vagrant-vmware-utility certificate generate
+        && sudo /opt/vagrant-vmware-desktop/bin/vagrant-vmware-utility service install
+      tags: vagrant,vagrantutility
 

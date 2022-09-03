@@ -24,7 +24,7 @@ box/vmware/%$(BOX_SUFFIX) box/virtualbox/%$(BOX_SUFFIX) box/parallels/%$(BOX_SUF
 	bin/box build $<
 
 # Ubuntu dev host version numbers
-VERSION_UBUNTU_HOST ?= 0.5.1
+VERSION_UBUNTU_HOST ?= 0.5.4
 VERSION_LONG_UBUNTU_HOST ?= v${VERSION_UBUNTU_HOST}
 
 .PHONY: all ansible-* build-* build-cs clean assure dconf-load deliver assure_atlas assure_atlas_vmware assure_atlas_virtualbox assure_atlas_parallels vagrant-*
@@ -37,18 +37,20 @@ all: build assure deliver
 
 build: $(BOX_FILES)
 
+# FIXME the sudo vmware-netcfg call is needed because of this packer issue https://github.com/hashicorp/packer-plugin-vmware/issues/4;
 build-%: ## build-(ubuntu1804-desktop|ubuntu1804|ubuntu1604-desktop|ubuntu1604|ubuntu1404-desktop|ubuntu1404) Build the specified box
 	@sudo vmware-modconfig --console --install-all; \
 	packer build -only=vmware-iso -var 'version=$(VAGRANT_BOX_VERSION)' -var-file=$*.json ubuntu.json
 
-build-cs: build-ubuntu1804-desktop ## WARNING: THIS BUILDS A PUBLIC VAGRANT BOX PUBLISHED TO VAGRANT CLOUD. Build the credit stretcher ubuntu host VMWare VM
+build-cs: ## WARNING: THIS BUILDS A PUBLIC VAGRANT BOX PUBLISHED TO VAGRANT CLOUD. Build the Fellow Pay ubuntu host VMWare VM
 	@if [[ -z "${BUILD_CONFIRMATION}" ]]; then \
 		read -r -p "WARNING: THIS BUILDS A PUBLIC VAGRANT BOX PUBLISHED TO VAGRANT CLOUD. Make sure it contains no sensitive information. Do you want to continue (yes|no): " BUILD_CONFIRMATION; \
 	fi; \
 	if [[ "$$BUILD_CONFIRMATION" = "yes" ]]; then \
-	  	sudo vmware-modconfig --console --install-all; \
 		packer build -var 'version=$(VAGRANT_BOX_VERSION)' -var 'github_oauth_token=853aa89f6459923fad9728f2b95320e2a042273f' -on-error=ask ubuntu-cs.json; \
 	fi;
+
+build-cs-full: build-ubuntu1804-desktop build-cs ## WARNING: THIS BUILDS A PUBLIC VAGRANT BOX PUBLISHED TO VAGRANT CLOUD. Build the ubuntu desktop 18.04 VMWare VM and then the Fellow Pay ubuntu host VMWare VM
 
 assure: assure_vmware assure_virtualbox assure_parallels
 
@@ -132,23 +134,34 @@ vagrant-cloud-publish:  ## Publish the packer built vagrant box to vagrant cloud
 		vagrant cloud publish creditstretcher/ubuntu18.04-desktop $(VAGRANT_BOX_VERSION) vmware_desktop box/vmware/cs-ubuntu1804-desktop-$(VAGRANT_BOX_VERSION).box -d "A VMWare Ubuntu desktop host VM with development tools installed." --version-description "version $(VAGRANT_BOX_VERSION)" --release --short-description "Download me!"; \
 	fi;
 
-vagrant-up-testing: ## vagrant up VM with $VAGRANT_VM_MEMORY GB ram (default=2) and $VAGRANT_VM_CPUS (default=1) cpus for testing purposes.
-	$(vagrantEnvVarsTesting) vagrant up --debug
+vagrant-up-testing: ## vagrant up VM with $VAGRANT_VM_MEMORY MB ram (default=2048) and $VAGRANT_VM_CPUS (default=1) cpus for testing purposes. You can set the following environment variables in the command line to set the VM ram and cpu respectively: VAGRANT_VM_MEMORY=xxx and  VAGRANT_VM_CPUS=x.
+	$(vagrantEnvVarsTesting) vagrant up
 
-vagrant-up: ## vagrant up VM with $VAGRANT_VM_MEMORY GB ram (default=12) and $VAGRANT_VM_CPUS (default=4) cpus.
+vagrant-up: ## vagrant up VM with $VAGRANT_VM_MEMORY MB ram (default=12288) and $VAGRANT_VM_CPUS (default=4) cpus. You can set the following environment variables in the command line to set the VM ram and cpu respectively: VAGRANT_VM_MEMORY=xxx and  VAGRANT_VM_CPUS=x.
 	$(MAKE) make-empty-directories; $(vagrantEnvVars) vagrant up
 
-vagrant-reload: ## vagrant reload VM with $VAGRANT_VM_MEMORY GB ram (default=12) and $VAGRANT_VM_CPUS (default=4) cpus.
+vagrant-reload-testing: ## vagrant reload VM with $VAGRANT_VM_MEMORY MB ram (default=2048) and $VAGRANT_VM_CPUS (default=2) cpus. You can set the following environment variables in the command line to set the VM ram and cpu respectively: VAGRANT_VM_MEMORY=xxx and  VAGRANT_VM_CPUS=x.
+	$(vagrantEnvVarsTesting) vagrant reload
+
+vagrant-reload: ## vagrant reload VM with $VAGRANT_VM_MEMORY MB ram (default=12288) and $VAGRANT_VM_CPUS (default=4) cpus. You can set the following environment variables in the command line to set the VM ram and cpu respectively: VAGRANT_VM_MEMORY=xxx and  VAGRANT_VM_CPUS=x.
 	$(vagrantEnvVars) vagrant reload
 
 vagrant-destroy: ## vagrant destroy VM.
 	$(vagrantEnvVars) vagrant destroy -f
 
-vagrant-recreate: ## vagrant destroy and up a VM with $VAGRANT_VM_MEMORY GB ram (default=12) and $VAGRANT_VM_CPUS (default=4) cpus.
+vagrant-recreate-testing: ## vagrant destroy and up a VM with $VAGRANT_VM_MEMORY MB ram (default=2048) and $VAGRANT_VM_CPUS (default=1) cpus. You can set the following environment variables in the command line to set the VM ram and cpu respectively: VAGRANT_VM_MEMORY=xxx and  VAGRANT_VM_CPUS=x.
+	vagrant destroy host -f; \
+	$(vagrantEnvVarsTesting) vagrant up
+
+vagrant-recreate: ## vagrant destroy and up a VM with $VAGRANT_VM_MEMORY MB ram (default=12288) and $VAGRANT_VM_CPUS (default=4) cpus. You can set the following environment variables in the command line to set the VM ram and cpu respectively: VAGRANT_VM_MEMORY=xxx and  VAGRANT_VM_CPUS=x.
 	vagrant destroy host -f; \
 	$(vagrantEnvVars) vagrant up
 
-vagrant-provision: ## vagrant provision VM
+vagrant-recreate-no-provision: ## vagrant destroy and up a VM with $VAGRANT_VM_MEMORY MB ram (default=12288) and $VAGRANT_VM_CPUS (default=4) cpus. You can set the following environment variables in the command line to set the VM ram and cpu respectively: VAGRANT_VM_MEMORY=xxx and  VAGRANT_VM_CPUS=x.
+	vagrant destroy host -f; \
+	$(vagrantEnvVars) vagrant up --no-provision
+
+vagrant-provision: ## vagrant provision VM with all the provisioners.
 	$(vagrantEnvVars) vagrant provision
 
 vagrant-provision-private: ## vagrant provision VM with private playbook and test.

@@ -1,10 +1,10 @@
-{
+ {
   "variables": {
     "vm_name": "cs-ubuntu1804-desktop",
     "version": "{{env `VAGRANT_BOX_VERSION`}}",
     "github_oauth_token": "{{env `GITHUB_OAUTH_TOKEN`}}",
-    "memory": "12228",
-    "cpus": "2"
+    "memory": "2048",
+    "cpus": "1"
   },
   "builders": [{
     "type": "vmware-vmx",
@@ -49,12 +49,14 @@
     {
       "type": "ansible",
       "playbook_file": "./provision/playbook.yml",
+      "host_alias": "localhost",
       "extra_arguments": [ "--extra-vars", "github_oauth_token={{user `github_oauth_token`}}" ],
       "galaxy_file": "./provision/requirements.yml",
       "max_retries" : 2
     },
     {
       "type": "ansible",
+      "host_alias": "localhost",
       "playbook_file": "./provision/playbook-packer.yml",
       "extra_arguments": [ "--extra-vars", "github_oauth_token={{user `github_oauth_token`}}" ],
       "galaxy_file": "./provision/requirements.yml",
