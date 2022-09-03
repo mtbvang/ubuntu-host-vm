@@ -109,11 +109,11 @@
     GITHUB_OAUTH_TOKEN: "{{ github_oauth_token }}"
 
   roles:
-    - role: slack
-      slack_version: "{{ _slack_version }}"
-      become: true
-      become_user: root
-      tags: slack
+    # - role: slack
+    #   slack_version: "{{ _slack_version }}"
+    #   become: true
+    #   become_user: root
+    #   tags: slack
     - role: nodejs
       nodejs_version: "12.x"
       nodejs_npm_global_packages:
@@ -158,7 +158,7 @@
             - org.intellij.plugins.hcl
             - name.kropp.intellij.makefile
             - org.jetbrains.plugins.ruby
-            - com.alayouni.ansiHighlight
+            # - com.alayouni.ansiHighlight
       become: true
       become_user: root
       tags: intellij
@@ -303,22 +303,22 @@
       args:
         creates: /usr/local/bin/aws-auth
       tags: awsauth
-    - name: Install gruntkms. Requires gruntwork-install
-      shell: >
-        /usr/local/bin/gruntwork-install --binary-name 'gruntkms' --repo https://github.com/gruntwork-io/gruntkms --tag {{ _grunt_kms_version }} &&
-        chmod 0755 /usr/local/bin/gruntkms
-      args:
-        creates: /usr/local/bin/gruntkms
-      become: true
-      become_user: root
-      tags: gruntkms
-    - name: Install gruntworks module-ecs scripts and helper modules. Requires gruntwork-install
-      shell: "/usr/local/bin/gruntwork-install --module-name {{ item }} --repo https://github.com/gruntwork-io/module-ecs --tag {{ _ecs_deploy_version }}"
-      with_items:
-        - ecs-deploy
-      become: true
-      become_user: root
-      tags: gruntworksmoduleecs
+    # - name: Install gruntkms. Requires gruntwork-install
+    #   shell: >
+    #     /usr/local/bin/gruntwork-install --binary-name 'gruntkms' --repo https://github.com/gruntwork-io/gruntkms --tag {{ _grunt_kms_version }} &&
+    #     chmod 0755 /usr/local/bin/gruntkms
+    #   args:
+    #     creates: /usr/local/bin/gruntkms
+    #   become: true
+    #   become_user: root
+    #   tags: gruntkms
+    # - name: Install gruntworks module-ecs scripts and helper modules. Requires gruntwork-install
+    #   shell: "/usr/local/bin/gruntwork-install --module-name {{ item }} --repo https://github.com/gruntwork-io/module-ecs --tag {{ _ecs_deploy_version }}"
+    #   with_items:
+    #     - ecs-deploy
+    #   become: true
+    #   become_user: root
+    #   tags: gruntworksmoduleecs
 
     #FIXME use get_url or uri module rather than running 'curl'.
     #  - name: Install gruntwork cli tool
@@ -333,19 +333,19 @@
     #      - gruntwork
     #      - gruntworkcli
     # To get the asset number for the download url run: curl --header 'Authorization: token ${GITHUB_OAUTH_TOKEN}' -L https://${GITHUB_OAUTH_TOKEN}:@api.github.com/repos/gruntwork-io/gruntwork/releases/latest
-    - name: Install gruntwork cli tool
-      shell: >
-        curl --header 'Authorization: token {{ github_oauth_token }}' --header 'Accept: application/octet-stream' -L https://{{ github_oauth_token }}:@api.github.com/repos/gruntwork-io/gruntwork/releases/assets/{{ _gruntwork_cli_version }} -o gruntwork_linux_amd64;
-        mv gruntwork_linux_amd64 /usr/local/bin/gruntwork;
-        chmod 0755 /usr/local/bin/gruntwork
-      args:
-        chdir: /usr/local/bin/
-        creates: gruntwork
-      become: true
-      become_user: root
-      tags:
-        - gruntwork
-        - gruntworkcli
+    # - name: Install gruntwork cli tool
+    #   shell: >
+    #     curl --header 'Authorization: token {{ github_oauth_token }}' --header 'Accept: application/octet-stream' -L https://{{ github_oauth_token }}:@api.github.com/repos/gruntwork-io/gruntwork/releases/assets/{{ _gruntwork_cli_version }} -o gruntwork_linux_amd64;
+    #     mv gruntwork_linux_amd64 /usr/local/bin/gruntwork;
+    #     chmod 0755 /usr/local/bin/gruntwork
+    #   args:
+    #     chdir: /usr/local/bin/
+    #     creates: gruntwork
+    #   become: true
+    #   become_user: root
+    #   tags:
+    #     - gruntwork
+    #     - gruntworkcli
 
     - name: Set node version
       shell: >

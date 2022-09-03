@@ -84,7 +84,7 @@
         aws --version
       register: output
       failed_when:
-      - '"aws-cli/1.18" not in output.stderr'
+      - '"aws-cli/1.18.140" not in output.stderr'
       ignore_errors: ignore_errors
       tags: test,awscli,awsclitest
 
