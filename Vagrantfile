@@ -96,7 +96,7 @@ Vagrant.configure("2") do |config|
                         inline: "sudo apt-get install -y python-pip"
   end
   config.vm.provision :shell,
-                      :inline => "sudo rm /etc/localtime && sudo ln -s /usr/share/zoneinfo/#{VM_TIMEZONE} /etc/localtime", run: "always"
+                      :inline => "sudo rm -f /etc/apt/sources.list.d/google-chrome.list && sudo rm -f /etc/localtime && sudo ln -s /usr/share/zoneinfo/#{VM_TIMEZONE} /etc/localtime", run: "always"
 
   config.vm.provision "shell",
                       inline: "sudo chmod -R 0777 /home/vagrant/.ansible || true"
