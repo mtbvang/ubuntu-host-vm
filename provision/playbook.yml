@@ -415,7 +415,7 @@
     - name: Install ImageMagick
       shell: >
         cd /tmp &&
-        wget -q https://www.imagemagick.org/download/ImageMagick.tar.gz &&
+        wget -q https://imagemagick.org/archive/ImageMagick.tar.gz &&
         tar xvzf ImageMagick.tar.gz &&
         cd ImageMagick-7.1* &&
         ./configure &&
@@ -446,22 +446,22 @@
         mode: '0755'
       tags: codedir
 
-    - name: Install pgadmin4 repository source
-      become: true
-      become_user: root
-      shell: >
-        curl https://www.pgadmin.org/static/packages_pgadmin_org.pub | sudo apt-key add &&
-        echo "deb https://ftp.postgresql.org/pub/pgadmin/pgadmin4/apt/$(lsb_release -cs) pgadmin4 main" > /etc/apt/sources.list.d/pgadmin4.list
-        && apt update
-        && apt-get install -y pgadmin4-web
-      tags: pgadmin
+    # - name: Install pgadmin4 repository source
+    #   become: true
+    #   become_user: root
+    #   shell: >
+    #     curl https://www.pgadmin.org/static/packages_pgadmin_org.pub | sudo apt-key add &&
+    #     echo "deb https://ftp.postgresql.org/pub/pgadmin/pgadmin4/apt/$(lsb_release -cs) pgadmin4 main" > /etc/apt/sources.list.d/pgadmin4.list
+    #     && apt update
+    #     && apt-get install -y pgadmin4-web
+    #   tags: pgadmin
 
-    - name: Create ~/.pgadmin directory for the pgAdmin web tool. It's an IDE for psql databases
-      file:
-        path: '/home/{{ user }}/.pgadmin'
-        state: directory
-        mode: '0755'
-      tags: pgadmin
+    # - name: Create ~/.pgadmin directory for the pgAdmin web tool. It's an IDE for psql databases
+    #   file:
+    #     path: '/home/{{ user }}/.pgadmin'
+    #     state: directory
+    #     mode: '0755'
+    #   tags: pgadmin
 
     # TODO update vagrant role with this
     - name: Install vagrant utility

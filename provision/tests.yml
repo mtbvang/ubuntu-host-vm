@@ -158,22 +158,22 @@
       - '"Run a single ECS Task" not in output.stdout'
       ignore_errors: ignore_errors
       tags: test,gruntworksmoduleecs,gruntworksmoduleecstest
-    - name: Test Zoom installed
-      shell: >
-        which zoom
-      register: output
-      failed_when:
-        - '"/usr/bin/zoom" not in output.stdout'
-      ignore_errors: ignore_errors
-      tags: test,zoom,zoomtest
-    - name: Test Slack installed
-      shell: >
-        which slack
-      register: output
-      failed_when:
-        - '"/usr/bin/slack" not in output.stdout'
-      ignore_errors: ignore_errors
-      tags: test,slack,slacktest
+    # - name: Test Zoom installed
+    #   shell: >
+    #     which zoom
+    #   register: output
+    #   failed_when:
+    #     - '"/usr/bin/zoom" not in output.stdout'
+    #   ignore_errors: ignore_errors
+    #   tags: test,zoom,zoomtest
+    # - name: Test Slack installed
+    #   shell: >
+    #     which slack
+    #   register: output
+    #   failed_when:
+    #     - '"/usr/bin/slack" not in output.stdout'
+    #   ignore_errors: ignore_errors
+    #   tags: test,slack,slacktest
     - name: Test GraphicsMagick installed
       shell: >
         gm version

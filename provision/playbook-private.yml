@@ -40,14 +40,14 @@
         mode: 0644
       tags: awsconfig
 
-    - name: Copy pgadmin4.db file to ~/.pgadmin
-      copy:
-        src: files/pgadmin4.db
-        dest: '/home/{{ user }}/.pgadmin'
-        owner: '{{ user }}'
-        mode: '0644'
-        force: no
-      tags: pgadmin
+    # - name: Copy pgadmin4.db file to ~/.pgadmin
+    #   copy:
+    #     src: files/pgadmin4.db
+    #     dest: '/home/{{ user }}/.pgadmin'
+    #     owner: '{{ user }}'
+    #     mode: '0644'
+    #     force: no
+    #   tags: pgadmin
 
     - name: Set fs.inotify.max_user_watches to 524288 in /etc/sysctl.conf
       sysctl:
