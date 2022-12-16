@@ -80,10 +80,10 @@ Vagrant.configure("2") do |config|
     rsync__exclude: %w(authorized_keys config)
 
   # Copy OpenVPN certificate files from host to VM
-  config.vm.synced_folder "~/OpenVPN", "/home/vagrant/OpenVPN", type: "rsync"
+  # config.vm.synced_folder "~/OpenVPN", "/home/vagrant/OpenVPN", type: "rsync"
 
   # Copy AWS credentias from host to VM
-  config.vm.synced_folder "~/.aws", "/home/vagrant/.aws", type: "rsync"
+  # config.vm.synced_folder "~/.aws", "/home/vagrant/.aws", type: "rsync"
 
   # Copy .gitconfig from host to VM
   config.vm.provision "file", source: "~/.gitconfig", destination: "/home/vagrant/.gitconfig"
